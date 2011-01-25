@@ -1,0 +1,40 @@
+#
+
+mainmenu "Linux Configuration"
+
+config HAVE_DOT_CONFIG
+	bool
+	default y
+
+menu "Build options"
+
+config TOOLCHAIN_DIR
+        string "Toolchain and header file location?"
+        default "/opt/freescale/usr/local/gcc-4.1.2-glibc-2.5-nptl-3/arm-none-linux-gnueabi"
+        help
+            This is the location where the toolchain will be installed.  The
+            toolchain will not work if it is moved from this location.
+            Therefore, if you wish to package up a uClibc toolchain, it is
+            important that is is set to the final location where the toolchain
+            will be used.
+
+            Most people will leave this set to the default value.
+
+config DOWNLOAD_SITE
+	string "Package download website?"
+	default "http://openbooxproject.sourceforge.net/packages"
+	help
+		This is the web address where you can download the 
+		source tarballs needed to build the target system and 
+		host programs.
+
+config JLEVEL
+        int "Number of jobs to run simultaneously"
+        default "1"
+        help
+            Number of jobs to run simultanesouly
+endmenu
+
+source "packages/kernel/Config.in"
+source "packages/Config.in"
+source "packages/rootfs/Config.in"

@@ -1,0 +1,21 @@
+config PACKAGE_BUSYBOX
+	bool "BusyBox"
+	default y
+	help
+	  The Swiss Army Knife of embedded Linux.  It slices, it dices, it
+	  makes Julian Fries.
+
+	  http://busybox.net/
+
+	  Most people will answer Y.
+
+config PACKAGE_BUSYBOX_CONFIG
+	string "BusyBox configuration file to use?"
+	depends PACKAGE_BUSYBOX
+	default "packages/busybox/busybox.config"
+	help
+	  Some people may wish to use their own modified BusyBox configuration
+	  file, and will specify their config file location with this option.
+
+	  Most people will just use the default BusyBox configuration file.
+

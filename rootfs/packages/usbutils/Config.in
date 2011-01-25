@@ -1,0 +1,6 @@
+config PACKAGE_USBUTILS
+	depends PACKAGE_LIBUSB
+	bool "USB Utils"
+	default y
+	help
+		Utilities for handling USB devices in userspace.

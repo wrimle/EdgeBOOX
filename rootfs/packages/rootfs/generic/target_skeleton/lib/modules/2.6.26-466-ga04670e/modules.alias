@@ -1,0 +1,24 @@
+# Aliases extracted from modules themselves.
+alias nls_gb2312 nls_cp936
+alias char-major-10-229 fuse
+alias sdio:c*v02DFd9103* libertas_sdio
+alias /dev/ppp ppp_generic
+alias char-major-108-* ppp_generic
+alias tty-ldisc-3 ppp_async
+alias usb:v*p*d*dc*dsc*dp*ic09isc*ip* usbcore
+alias usb:v*p*d*dc09dsc*dp*ic*isc*ip* usbcore
+alias fsl-ehci ehci_hcd
+alias usb:v*p*d*dc*dsc*dp*ic02isc02ip06* cdc_acm
+alias usb:v*p*d*dc*dsc*dp*ic02isc02ip05* cdc_acm
+alias usb:v*p*d*dc*dsc*dp*ic02isc02ip04* cdc_acm
+alias usb:v*p*d*dc*dsc*dp*ic02isc02ip03* cdc_acm
+alias usb:v*p*d*dc*dsc*dp*ic02isc02ip02* cdc_acm
+alias usb:v*p*d*dc*dsc*dp*ic02isc02ip01* cdc_acm
+alias usb:v0803p3095d*dc*dsc*dp*ic*isc*ip* cdc_acm
+alias usb:v22B8p7000d*dc*dsc*dp*ic*isc*ip* cdc_acm
+alias usb:v0ACEp1611d*dc*dsc*dp*ic*isc*ip* cdc_acm
+alias usb:v0ACEp1608d*dc*dsc*dp*ic*isc*ip* cdc_acm
+alias usb:v079Bp000Fd*dc*dsc*dp*ic*isc*ip* cdc_acm
+alias usb:v0482p0203d*dc*dsc*dp*ic*isc*ip* cdc_acm
+alias usb:v0E8Dp0003d*dc*dsc*dp*ic*isc*ip* cdc_acm
+alias usb:v0870p0001d*dc*dsc*dp*ic*isc*ip* cdc_acm

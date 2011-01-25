@@ -1,0 +1,6 @@
+config PACKAGE_UDEV
+        bool "Udev device manager"
+        default y
+        help
+          Udev provides a dynamic /dev directory, and hooks userspace into
+          kernel device events.

@@ -1,0 +1,7 @@
+menu "Linux kernel for Freescale MXC/iMX Series"
+
+source "packages/kernel/headers/Config.in"
+
+source "packages/kernel/linux/Config.in"
+
+endmenu

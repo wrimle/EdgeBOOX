@@ -1,0 +1,6 @@
+config PACKAGE_TSLIB
+        bool "TouchScreen support library"
+        default y
+        help
+          the tslib libiary provides the united user interfaces to operate TS.
+          Such as methods for filitering,against dithering and calibrating ...

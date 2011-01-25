@@ -1,0 +1,18 @@
+#!/bin/sh
+
+case "$1" in
+	start)
+		modprobe mx31ads-pcmcia > /dev/null 2>&1
+		modprobe pcmcia > /dev/null 2>&1
+		;;
+
+	stop)
+		MODULES=
+		for i in $MODULES ; do
+			rmmod $i > /dev/null 2>&1
+		done
+		rmmod pcmcia > /dev/null 2>&1
+		rmmod mx31ads-pcmcia > /dev/null 2>&1
+		rmmod pcmcia_core > /dev/null 2>&1
+		;;
+esac

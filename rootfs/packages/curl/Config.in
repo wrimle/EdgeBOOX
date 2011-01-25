@@ -1,0 +1,5 @@
+config PACKAGE_CURL
+	bool "curl"
+	default y
+	help
+	 curl is a command line tool for transferring files with URL syntax

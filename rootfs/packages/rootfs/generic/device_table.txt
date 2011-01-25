@@ -1,0 +1,99 @@
+#******************************************************************************
+#
+# device.txt - Configuration file for genext2fs.
+#
+#******************************************************************************
+
+#
+# <name>                               <t> <mode> <u> <g> <Mj> <mn> <s> <i> <c>
+# where <name> is the file name,  <t> can be one of: 
+#       f       A regular file
+#       d       Directory
+#       c       Character special device file
+#       b       Block special device file
+#       p       Fifo (named pipe)
+# <u> is the user id for the target file, <g> is the group id for the
+# target file.  The rest of the entries (<Mj>, <mn>, <s>, <i>, and <c>) apply
+# only  to device special files.
+#
+
+#
+# Create some directories.
+#
+# <name>                               <t> <mode> <u> <g> <Mj> <mn> <s> <i> <c>
+#/bin                                    d    755   0   0    -    -   -   -   -
+#/dev                                    d    755   0   0    -    -   -   -   -
+#/proc                                   d    555   0   0    -    -   -   -   -
+#/tmp                                    d   1777   0   0    -    -   -   -   -
+#/var                                    d    755   0   0    -    -   -   -   -
+
+#
+# Adjust the permissions on some normal files.
+#
+# <name>                               <t> <mode> <u> <g> <Mj> <mn> <s> <i> <c>
+#/etc/rc.sysinit                         f    755   0   0    -    -   -   -   -
+#/etc/shadow                             f    600   0   0    -    -   -   -   -
+#/sbin/hotplug                           f    755   0   0    -    -   -   -   -
+#/usr/share/udhcpc/default.script        f    755   0   0    -    -   -   -   -
+
+#
+# Create the necessary character device nodes.
+#
+# <name>                               <t> <mode> <u> <g> <Mj> <mn> <s> <i> <c>
+/dev/null                               c    640   0   0    1    3   0   0   -
+/dev/console                            c    640   0   0    5    1   0   0   -
+#/dev/mem                                c    640   0   0    1    1   0   0   -
+#/dev/kmem                               c    640   0   0    1    2   0   0   -
+#/dev/zero                               c    640   0   0    1    5   0   0   -
+#/dev/random                             c    640   0   0    1    8   0   0   -
+#/dev/urandom                            c    640   0   0    1    9   0   0   -
+#/dev/ptyp                               c    666   0   0    2    0   0   1   8
+#/dev/ttyp                               c    666   0   0    3    0   0   1   8
+#/dev/tty                                c    666   0   0    4    0   0   1   8
+#/dev/ttyS0                              c    640   0   0    4   64   0   1   -
+#/dev/tty                                c    666   0   0    5    0   0   0   -
+#/dev/ptmx                               c    666   0   0    5    2   0   0   -
+#/dev/vcs                                c    666   0   0    7    0   0   0   -
+#/dev/vcs                                c    666   0   0    7    1   1   1   8
+#/dev/vcsa                               c    666   0   0    7  128   0   0   -
+#/dev/vcsa                               c    666   0   0    7  129   1   1   8
+#/dev/input/mice                         c    600   0   0   13   63   0   0   -
+#/dev/input/mouse0                       c    600   0   0   13   32   0   0   -
+#/dev/mixer                              c    600   0   0   14    0   0   0   -
+#/dev/dsp                                c    600   0   0   14    3   0   0   -
+#/dev/audio                              c    600   0   0   14    4   0   0   -
+#/dev/dsp1                               c    600   0   0   14   19   0   0   -
+#/dev/audio1                             c    600   0   0   14   20   0   0   -
+#/dev/dsp2                               c    600   0   0   14   35   0   0   -
+#/dev/audio2                             c    600   0   0   14   36   0   0   -
+#/dev/fb                                 c    600   0   0   29    0   0   0   -
+#/dev/fb0                                c    600   0   0   29    0   0   0   -
+#/dev/lirc                               c    600   0   0   61    0   0   0   -
+#/dev/lircd                              p    600   0   0    -    -   -   -   -
+#/dev/lircm                              p    600   0   0    -    -   -   -   -
+#/dev/mtd                                c    644   0   0   90    0   0   2   8
+#/dev/rtc                                c    644   0   0   254	 0   0   2   -
+#/dev/rtc0                               c    644   0   0   254   0   0   2   -
+#/dev/rtc1                               c    644   0   0   254   1   0   2   -
+#/dev/rtc2                               c    644   0   0   254   2   0   2   -	
+#/dev/mtdr                               c    644   0   0   90    1   0   2   8
+#/dev/rawctl                             c    660   0   0  162    0   0   0   -
+#/dev/ttyAM                              c    640   0   0  204   16   0   1   2
+#/dev/cuam                               c    640   0   0  205   16   0   1   2
+
+#
+# Create the necessary block device nodes.
+#
+# <name>                               <t> <mode> <u> <g> <Mj> <mn> <s> <i> <c>
+#/dev/ram                                b    640   0   0    1    0   0   0   -
+#/dev/ram                                b    640   0   0    1    0   0   1   4
+#/dev/hda                                b    640   0   0    3    0   0   0   -
+#/dev/hda                                b    640   0   0    3    1   1   1   8
+#/dev/hdb                                b    640   0   0    3   64   0   0   -
+#/dev/hdb                                b    640   0   0    3   65   1   1   8
+#/dev/loop                               b    640   0   0    7    0   0   1   8
+#/dev/sda                                b    660   0   0    8    0   0   0   -
+#/dev/sda                                b    660   0   0    8    1   1   1   4
+#/dev/sdb                                b    660   0   0    8   16   0   0   -
+#/dev/sdb                                b    660   0   0    8   17   1   1   4
+#/dev/mtdblock                           b    640   0   0   31    0   0   1   8

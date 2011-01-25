@@ -1,0 +1,5 @@
+config PACKAGE_EXPAT
+	bool"expat"
+	default y
+	help
+	  The Expat XML Parser.

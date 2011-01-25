@@ -1,0 +1,7 @@
+config PACKAGE_LIBICONV
+	bool "libiconv"
+	default y
+	help
+	  Support multiple character encodings, but that support lacks from your system.
+	
+	  http://www.gnu.org/software/libiconv/

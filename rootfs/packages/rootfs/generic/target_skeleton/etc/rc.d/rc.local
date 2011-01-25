@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# rc.local, Local initialisation tasks
+
+# setup ppp options file
+if [ ! -f /etc/ppp/options.orig -a -f  /etc/ppp/options ]
+then
+	mv /etc/ppp/options /etc/ppp/options.orig
+	ln -s options.pinpad_target /etc/ppp/options
+fi

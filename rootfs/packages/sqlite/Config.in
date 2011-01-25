@@ -1,0 +1,6 @@
+config PACKAGE_SQLITE
+        bool "SQLite database engine"
+        default y
+        help
+          SQLite is a software library that implements a self-contained,
+          serverless, zero-configuration, transactional SQL database engine.

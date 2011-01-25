@@ -1,0 +1,57 @@
+diff -ruN yaffs2/utils/mkyaffs2image.c yaffs2.boox/utils/mkyaffs2image.c
+--- yaffs2/utils/mkyaffs2image.c	2010-08-04 04:04:13.000000000 +0200
++++ yaffs2.boox/utils/mkyaffs2image.c	2010-10-29 19:49:32.000000000 +0200
+@@ -29,6 +29,7 @@
+ #include <dirent.h>
+ #include <string.h>
+ #include <unistd.h>
++#include <errno.h>
+ #include "yaffs_ecc.h"
+ #include "yaffs_guts.h"
+ 
+@@ -159,6 +160,11 @@
+ 	yaffs_ExtendedTags t;
+ 	yaffs_PackedTags2 pt;
+ 
++	#define FREE_OOB_AREA_COUNT	5
++	const int FreeOobArea[FREE_OOB_AREA_COUNT][2] = { { 0, 5 }, { 11, 10 }, { 27, 10 }, { 43, 10 }, { 59, 5 } };
++	char oobData[spareSize];
++	int i, handledSize = 0, size;
++
+ 	error = write(outFile,data,chunkSize);
+ 	if(error < 0) return error;
+ 
+@@ -184,8 +190,23 @@
+ 
+ 	yaffs_PackTags2(&pt,&t,1);
+ 	
++	// Need to write the oob tags to the right position within the oob space
++	memset(oobData,0xFF,spareSize);
++	for (i = 0; i < FREE_OOB_AREA_COUNT && handledSize < sizeof(yaffs_PackedTags2); i++) {
++		if(handledSize + FreeOobArea[i][1] < sizeof(yaffs_PackedTags2))
++			size = FreeOobArea[i][1];
++		else
++			size = sizeof(yaffs_PackedTags2) - handledSize;
++
++		memcpy(&oobData[FreeOobArea[i][0]], (char*)&pt + handledSize, size);
++		handledSize += size;
++	}
++	memcpy(&oobData[FreeOobArea[i-1][0] + size], (char*)&pt, FreeOobArea[0][1]);		// First 5 bytes are repeated?!
++	
++	return write(outFile,oobData,spareSize);
++
+ //	return write(outFile,&pt,sizeof(yaffs_PackedTags2));
+-	return write(outFile,&pt,spareSize);
++//	return write(outFile,&pt,spareSize);
+ 	
+ }
+ 
+@@ -404,7 +425,7 @@
+ 								}
+ 								else
+ 								{
+-									perror("Error opening file");
++									fprintf(stderr, "Error opening file %s: %s\n", full_name, strerror(errno));
+ 								}
+ 								close(h);
+ 								

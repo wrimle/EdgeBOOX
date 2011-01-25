@@ -1,0 +1,6 @@
+config PACKAGE_DOSFS_TOOLS
+	bool "DOS Filesystem Tools"
+	default y
+	help
+	  Standard DOS Filesystem tools MKDOSFS/DOSFSCK.
+	  Used for HDD Formating and USB Thumb Drives.

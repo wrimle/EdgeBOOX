@@ -1,0 +1,6 @@
+config PACKAGE_QT
+	bool "Qt-Embedded Library"
+        default y
+        help
+          Qt provides application developers with all the functionality
+          needed to build complex, high-performance GUI and console applications.

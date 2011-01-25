@@ -1,0 +1,27 @@
+config TARGET_ROOTFS_YAFFS2
+	bool "yaffs2 root filesystem for the target device"
+	default y
+	help
+	  Build a yaffs2 root filesystem
+
+config TARGET_ROOTFS_YAFFS2_COPYTO
+	string "also copy the image to..."
+	depends on 	TARGET_ROOTFS_YAFFS2
+	default ""
+	help
+		Copies the resulting image to a secondary location.
+
+config TARGET_ROOTFS_YAFFS2_BOOX_PACKAGE
+	bool "create a boox update package"
+	depends on 	TARGET_ROOTFS_YAFFS2
+	default y
+	help
+		Creates a boox 60 update package.
+
+config TARGET_ROOTFS_YAFFS2_UNYAFFS
+	bool "build unyaffs tool for host system"
+	depends on 	TARGET_ROOTFS_YAFFS2
+	default n
+	help
+		Unyaffs can be used to extract the files and folders
+		from a yaffs2 image.

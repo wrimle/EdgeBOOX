@@ -1,0 +1,7 @@
+config PACKAGE_USB_MODESWITCH
+	depends PACKAGE_LIBUSB
+	bool "USB Mode Switch"
+	default y
+	help
+		USB_ModeSwitch is (surprise!) a small mode switching tool
+		for controlling "flip flop" (multiple device) USB gear.

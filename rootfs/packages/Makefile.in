@@ -1,0 +1,93 @@
+MAKE=make
+
+WGET:=wget --passive-ftp -nd
+SED:=sed -e
+DOWNLOAD_SITE:=$(strip $(subst ",, $(DOWNLOAD_SITE)))
+
+HOSTCC:=gcc
+
+BOOX_VERSION:=1.5.1-0.0.1
+
+BASE_DIR:=${shell pwd}
+DL_DIR:=$(BASE_DIR)/dl
+HOST_DIR:=$(BASE_DIR)/host
+IMAGE_DIR:=$(BASE_DIR)/images
+BUILD_DIR:=$(BASE_DIR)/build
+KERNEL_DIR:=$(BASE_DIR)/kernel
+TARGET_DIR:=$(BUILD_DIR)/root
+
+ELF_TOOLCHAIN_DIR:=/usr/local/arm/3.2.1-elf
+TOOLCHAIN_DIR:=$(strip $(subst ",, $(TOOLCHAIN_DIR)))
+
+TARGET_PATH=$(TOOLCHAIN_DIR)/bin:/bin:/sbin:/usr/bin:/usr/sbin
+TARGET_ELF_PATH=$(ELF_TOOLCHAIN_DIR)/bin:/bin:sbin:usr/bin:usr/sbin
+
+KERNEL_CROSS=$(TOOLCHAIN_DIR)/bin/arm-none-linux-gnueabi-
+TARGET_CROSS=$(TOOLCHAIN_DIR)/bin/arm-none-linux-gnueabi-
+TARGET_ELF_CROSS=$(ELF_TOOLCHAIN_DIR)/bin/arm-elf-
+
+REAL_GNU_TARGET_NAME=arm-none-linux-gnueabi
+
+TARGET_CC:=$(TARGET_CROSS)gcc
+TARGET_CXX:=$(TARGET_CROSS)g++
+TARGET_RANLIB:=$(TARGET_CROSS)ranlib
+TARGET_STRIP:=$(TARGET_CROSS)strip
+TARGET_LD:=$(TARGET_CROSS)ld
+TARGET_AR:=$(TARGET_CROSS)ar
+
+TARGET_ELF_CC:=$(TARGET_ELF_CROSS)gcc
+TARGET_ELF_CXX:=$(TARGET_ELF_CROSS)g++
+TARGET_ELF_RANLIB:=$(TARGET_ELF_CROSS)ranlib
+TARGET_ELF_STRIP:=$(TARGET_ELF_CROSS)strip
+TARGET_ELF_LD:=$(TARGET_ELF_CROSS)ld
+TARGET_ELF_AR:=$(TARGET_ELF_CROSS)ar
+TARGET_ELF_NM:=$(TARGET_ELF_CROSS)nm
+TARGET_ELF_OBJCOPY:=$(TARGET_ELF_CROSS)objcopy
+
+INSTALL=/usr/bin/install
+PATCH=$(BASE_DIR)/packages/kernel/patch-kernel.sh
+CONFIG_DIR=$(BASE_DIR)/defconfigs
+
+EPREFIX:=/opt/onyx/arm
+
+HOST_ARCH:=$(shell $(HOSTCC) -dumpmachine | sed -e s'/-.*//' \
+	-e 's/sparc.*/sparc/' \
+	-e 's/arm.*/arm/g' \
+	-e 's/m68k.*/m68k/' \
+	-e 's/ppc/powerpc/g' \
+	-e 's/v850.*/v850/g' \
+	-e 's/sh[234]/sh/' \
+	-e 's/mips-.*/mips/' \
+	-e 's/mipsel-.*/mipsel/' \
+	-e 's/cris.*/cris/' \
+	-e 's/i[3-9]86/i386/' \
+	)
+
+GNU_HOST_NAME:=$(HOST_ARCH)-pc-linux-gnu
+
+TARGET_CFLAGS=-I$(HOST_DIR)$(EPREFIX)/include
+TARGET_LDFLAGS=-L$(HOST_DIR)$(EPREFIX)/lib
+
+TARGET_CONFIGURE_OPTS=PATH=$(TARGET_PATH) \
+		AR=$(TARGET_CROSS)ar \
+		AS=$(TARGET_CROSS)as \
+		LD=$(TARGET_CROSS)ld \
+		NM=$(TARGET_CROSS)nm \
+		CC=$(TARGET_CROSS)gcc \
+		GCC=$(TARGET_CROSS)gcc \
+		CXX=$(TARGET_CROSS)g++ \
+		RANLIB=$(TARGET_CROSS)ranlib \
+		OBJCOPY=$(TARGET_CROSS)objcopy \
+		STRIP=$(TARGET_CROSS)strip
+
+TARGET_ELF_CONFIGURE_OPTS=AR=$(TARGET_ELF_CROSS)ar \
+		AS=$(TARGET_ELF_CROSS)as \
+		LD=$(TARGET_ELF_CROSS)ld \
+		NM=$(TARGET_ELF_CROSS)nm \
+		CC=$(TARGET_ELF_CROSS)gcc \
+		GCC=$(TARGET_ELF_CROSS)gcc \
+		CXX=$(TARGET_ELF_CROSS)g++ \
+		RANLIB=$(TARGET_ELF_CROSS)ranlib \
+		OBJCOPY=$(TARGET_ELF_CROSS)objcopy
+
+

@@ -1,0 +1,10 @@
+
+# make keypad always be event0, ts always be event1
+SYSFS{name}=="mxckpd",	NAME="input/event0",	SYMLINK+="input/keyboard0"
+SYSFS{name}=="mxc_ts",	NAME="input/event1",	SYMLINK+="input/ts0"
+SYSFS{name}=="MPR084",	NAME="input/event0",	SYMLINK+="input/keyboard0"
+SYSFS{name}=="TSC2007",	NAME="input/event1",	SYMLINK+="input/ts0"
+
+# The long class name gets cut off to be mc13783_connectiv in 
+# /sys/class/mc13783_connectivity/mc13783_connectivit
+KERNEL=="mc13783_connectiv*",	NAME="mc13783_connectivity"

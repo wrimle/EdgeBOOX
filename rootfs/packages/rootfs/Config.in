@@ -1,0 +1,5 @@
+menu "Target Options"
+
+source "packages/rootfs/yaffs2/Config.in"
+
+endmenu

@@ -1,0 +1,1102 @@
+diff -ruN onyx-intl-boox-opensource-9124236.org/CMakeLists.txt onyx-intl-boox-opensource-9124236/CMakeLists.txt
+--- onyx-intl-boox-opensource-9124236.org/CMakeLists.txt	2011-01-01 18:13:28.000000000 +0100
++++ onyx-intl-boox-opensource-9124236/CMakeLists.txt	2011-01-02 12:32:36.746348291 +0100
+@@ -1,6 +1,24 @@
+ cmake_minimum_required(VERSION 2.6)
+ 
+-SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules")
++SET(CMAKE_MODULE_PATH "${ONYX_SDK_ROOT}/cmake_modules")
++
++if(BUILD_FOR_ARM)
++  include(arm_toolchain)
++  include_directories(BEFORE ${ONYX_SDK_ROOT}/include)
++  link_directories("${ONYX_SDK_ROOT}/lib")
++  use_arm_toolchain()
++  # Maximize window.
++  add_definitions(-DSCREEN_WIDTH=-1 -DSCREEN_HEIGHT=-1 -DBUILD_FOR_ARM)
++  add_definitions(-DSHARE_ROOT="/usr/share")
++  link_directories("/opt/onyx/arm/lib")
++else(BUILD_FOR_ARM)
++  # Use 600x800 to approximate device screen on PC.
++  add_definitions(-DSCREEN_WIDTH=600)
++  add_definitions(-DSCREEN_HEIGHT=800)
++  add_definitions(-DSHARE_ROOT="")
++  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
++  link_directories(${CMAKE_SOURCE_DIR}/sdk/lib/x86)
++endif(BUILD_FOR_ARM)
+ 
+ Project(BooxOpensource CXX C)
+ enable_testing()
+@@ -32,28 +50,9 @@
+ include_directories(BEFORE
+   ${CMAKE_SOURCE_DIR}/sdk/include
+   ${CMAKE_SOURCE_DIR}/code/
+-  ${CMAKE_SOURCE_DIR}/third_party
+-  ${CMAKE_SOURCE_DIR}/third_party/gtest/include
+-  ${CMAKE_SOURCE_DIR}/third_party/gmock/include
+ )
+ 
+-if(BUILD_FOR_ARM)
+-  include(arm_toolchain)
+-  use_arm_toolchain()
+-  # Maximize window.
+-  add_definitions(-DSCREEN_WIDTH=-1 -DSCREEN_HEIGHT=-1 -DBUILD_FOR_ARM)
+-  add_definitions(-DSHARE_ROOT="/usr/share")
+-  link_directories(${CMAKE_SOURCE_DIR}/sdk/lib/arm)
+-else(BUILD_FOR_ARM)
+-  # Use 600x800 to approximate device screen on PC.
+-  add_definitions(-DSCREEN_WIDTH=600)
+-  add_definitions(-DSCREEN_HEIGHT=800)
+-  add_definitions(-DSHARE_ROOT="")
+-  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+-  link_directories(${CMAKE_SOURCE_DIR}/sdk/lib/x86)
+-endif(BUILD_FOR_ARM)
+-
+-set(ONYX_LIBS onyx_sys onyx_ui onyx_wifi onyx_wpa onyx_screen onyx_data onyx_cms)
++set(ONYX_LIBS onyx_sys onyx_ui onyx_wireless onyx_wpa onyx_screen onyx_data onyx_cms onyxapp)
+ ADD_DEFINITIONS(-DCONFIG_CTRL_IFACE)
+ IF (WIN32)
+ ADD_DEFINITIONS(-DCONFIG_NATIVE_WINDOWS)
+@@ -63,4 +62,3 @@
+ ENDIF (WIN32)
+ 
+ add_subdirectory(code/src)
+-add_subdirectory(third_party)
+diff -ruN onyx-intl-boox-opensource-9124236.org/code/src/dictionary_tool/CMakeLists.txt onyx-intl-boox-opensource-9124236/code/src/dictionary_tool/CMakeLists.txt
+--- onyx-intl-boox-opensource-9124236.org/code/src/dictionary_tool/CMakeLists.txt	2011-01-01 18:13:28.000000000 +0100
++++ onyx-intl-boox-opensource-9124236/code/src/dictionary_tool/CMakeLists.txt	2011-01-02 12:32:36.748348970 +0100
+@@ -10,14 +10,12 @@
+ 
+ ADD_EXECUTABLE(dict_tool ${SRCS})
+ TARGET_LINK_LIBRARIES(dict_tool
+-  onyxapp
+   dictionary
+   tts
+   sound
+   onyx_data
+   onyx_screen
+   onyx_ui
+-  private_conf
+   ${QT_LIBRARIES}
+   ${ADD_LIB}
+ )
+diff -ruN onyx-intl-boox-opensource-9124236.org/code/src/djvu_reader/CMakeLists.txt onyx-intl-boox-opensource-9124236/code/src/djvu_reader/CMakeLists.txt
+--- onyx-intl-boox-opensource-9124236.org/code/src/djvu_reader/CMakeLists.txt	2011-01-01 18:13:28.000000000 +0100
++++ onyx-intl-boox-opensource-9124236/code/src/djvu_reader/CMakeLists.txt	2011-01-02 12:32:36.751350146 +0100
+@@ -24,5 +24,7 @@
+   onyx_screen
+   onyx_ui
+   onyx_sys
++  sound
++  tts
+   ${iconv_lib}
+   ${QT_LIBRARIES})
+diff -ruN onyx-intl-boox-opensource-9124236.org/code/src/djvu_reader/libdjvu/CMakeLists.txt onyx-intl-boox-opensource-9124236/code/src/djvu_reader/libdjvu/CMakeLists.txt
+--- onyx-intl-boox-opensource-9124236.org/code/src/djvu_reader/libdjvu/CMakeLists.txt	2011-01-01 18:13:28.000000000 +0100
++++ onyx-intl-boox-opensource-9124236/code/src/djvu_reader/libdjvu/CMakeLists.txt	2011-01-02 12:32:36.753346031 +0100
+@@ -120,6 +120,8 @@
+ XMLTags.cpp
+ ZPCodec.cpp)
+ 
+-ADD_LIBRARY(djvulibre ${HDRS} ${SRCS})
+-
+-
++IF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	ADD_LIBRARY(djvulibre ${HDRS} ${SRCS})
++ELSE (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	ADD_LIBRARY(djvulibre SHARED ${HDRS} ${SRCS})
++ENDIF (WIN32 OR ONYX_BUILD_STATIC_LIB)
+diff -ruN onyx-intl-boox-opensource-9124236.org/code/src/fbreader_onyx/bzip2/CMakeLists.txt onyx-intl-boox-opensource-9124236/code/src/fbreader_onyx/bzip2/CMakeLists.txt
+--- onyx-intl-boox-opensource-9124236.org/code/src/fbreader_onyx/bzip2/CMakeLists.txt	2011-01-01 18:13:28.000000000 +0100
++++ onyx-intl-boox-opensource-9124236/code/src/fbreader_onyx/bzip2/CMakeLists.txt	2011-01-02 12:32:36.756348277 +0100
+@@ -12,5 +12,8 @@
+ ADD_DEFINITIONS(-D_FILE_OFFSET_BITS=64)
+ 
+ # bzip2 library.
+-ADD_LIBRARY(bz2 ${SRCS})
+-
++IF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	ADD_LIBRARY(bz2 ${SRCS})
++ELSE (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	ADD_LIBRARY(bz2 SHARED ${SRCS})
++ENDIF (WIN32 OR ONYX_BUILD_STATIC_LIB)
+diff -ruN onyx-intl-boox-opensource-9124236.org/code/src/fbreader_onyx/CMakeLists.txt onyx-intl-boox-opensource-9124236/code/src/fbreader_onyx/CMakeLists.txt
+--- onyx-intl-boox-opensource-9124236.org/code/src/fbreader_onyx/CMakeLists.txt	2011-01-01 18:13:28.000000000 +0100
++++ onyx-intl-boox-opensource-9124236/code/src/fbreader_onyx/CMakeLists.txt	2011-01-02 12:32:36.761345727 +0100
+@@ -13,7 +13,13 @@
+ # linebreak library
+ FILE(GLOB_RECURSE linebreak_headers linebreak/*.h)
+ FILE(GLOB_RECURSE linebreak_srcs linebreak/*.c)
+-add_library(linebreak  ${linebreak_headers} ${linebreak_srcs})
++
++IF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	add_library(linebreak  ${linebreak_headers} ${linebreak_srcs})
++ELSE (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	add_library(linebreak  SHARED ${linebreak_headers} ${linebreak_srcs})
++ENDIF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++
+ INCLUDE_DIRECTORIES(linebreak)
+ 
+ # fribidi library
+@@ -28,11 +34,12 @@
+     FILE(GLOB_RECURSE fribidi_charset_srcs fribidi/charset/*.c)
+     FILE(GLOB_RECURSE fribidi_headers fribidi/lib/*.h)
+     FILE(GLOB_RECURSE fribidi_srcs fribidi/lib/*.c)
+-    add_library(fribidi
+-      ${fribidi_charset_headers}
+-      ${fribidi_charset_srcs}
+-      ${fribidi_headers}
+-      ${fribidi_srcs})
++
++	IF (ONYX_BUILD_STATIC_LIB)
++		add_library(fribidi ${fribidi_charset_headers} ${fribidi_charset_srcs} ${fribidi_headers} ${fribidi_srcs})
++	ELSE (ONYX_BUILD_STATIC_LIB)
++		add_library(fribidi SHARED ${fribidi_charset_headers} ${fribidi_charset_srcs} ${fribidi_headers} ${fribidi_srcs})
++	ENDIF (ONYX_BUILD_STATIC_LIB)
+ ENDIF(NOT WIN32)
+ 
+ 
+@@ -123,9 +130,11 @@
+ ADD_DEFINITIONS(-DAPPIMAGEDIR="app")
+ ADD_DEFINITIONS(-DUNICODE)
+ 
+-ADD_library(fb_reader
+-  ${fbreader_headers} ${fbreader_srcs}
+-  )
++IF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	ADD_library(fb_reader ${fbreader_headers} ${fbreader_srcs})
++ELSE (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	ADD_library(fb_reader SHARED ${fbreader_headers} ${fbreader_srcs})
++ENDIF (WIN32 OR ONYX_BUILD_STATIC_LIB)
+ 
+ QT4_WRAP_CPP(moc_onyx_reader_app_srcs zlibrary/ui/src/qt4/library/ZLibrary.h)
+ 
+diff -ruN onyx-intl-boox-opensource-9124236.org/code/src/fbreader_onyx/wv2-0.4.2/src/CMakeLists.txt onyx-intl-boox-opensource-9124236/code/src/fbreader_onyx/wv2-0.4.2/src/CMakeLists.txt
+--- onyx-intl-boox-opensource-9124236.org/code/src/fbreader_onyx/wv2-0.4.2/src/CMakeLists.txt	2011-01-01 18:13:28.000000000 +0100
++++ onyx-intl-boox-opensource-9124236/code/src/fbreader_onyx/wv2-0.4.2/src/CMakeLists.txt	2011-01-02 12:32:36.763347545 +0100
+@@ -75,5 +75,10 @@
+     pole.h
+     )
+ 
+-ADD_LIBRARY( wv2 STATIC ${wv2_SOURCES} ${wv2_HEADERS} )
++IF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	ADD_LIBRARY( wv2 STATIC ${wv2_SOURCES} ${wv2_HEADERS} )
++ELSE (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	ADD_LIBRARY( wv2 SHARED ${wv2_SOURCES} ${wv2_HEADERS} )
++ENDIF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++
+ TARGET_LINK_LIBRARIES( wv2 ${ICONV_LIBRARIES} ${ZLIB_LIBRARIES} )
+diff -ruN onyx-intl-boox-opensource-9124236.org/code/src/fbreader_onyx/zlibrary/CMakeLists.txt onyx-intl-boox-opensource-9124236/code/src/fbreader_onyx/zlibrary/CMakeLists.txt
+--- onyx-intl-boox-opensource-9124236.org/code/src/fbreader_onyx/zlibrary/CMakeLists.txt	2011-01-01 18:13:28.000000000 +0100
++++ onyx-intl-boox-opensource-9124236/code/src/fbreader_onyx/zlibrary/CMakeLists.txt	2011-01-02 12:32:36.766347601 +0100
+@@ -139,11 +139,22 @@
+     ${zlibrary_core_desktop_dlg_srcs}
+ )
+ 
+-add_library(zlibrary
+-  ${zlibrary_core_hdrs} ${zlibrary_core_srcs}
+-  ${zlibrary_ui_qt4_hdrs} ${zlibrary_ui_qt4_srcs}
+-  ${zlibrary_ui_sys_hdrs} ${zlibrary_ui_sys_srcs}
+-  ${zlibrary_text_headers} ${zlibrary_text_srcs}
+-  ${zlibrary_ui_sys_headers} ${ZLIBRARY_ui_sys_srcs}
+-  ${moc_zlibrary_ui_srcs})
++IF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	add_library(zlibrary
++	  ${zlibrary_core_hdrs} ${zlibrary_core_srcs}
++	  ${zlibrary_ui_qt4_hdrs} ${zlibrary_ui_qt4_srcs}
++	  ${zlibrary_ui_sys_hdrs} ${zlibrary_ui_sys_srcs}
++	  ${zlibrary_text_headers} ${zlibrary_text_srcs}
++	  ${zlibrary_ui_sys_headers} ${ZLIBRARY_ui_sys_srcs}
++	  ${moc_zlibrary_ui_srcs})
++ELSE (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	add_library(zlibrary SHARED
++	  ${zlibrary_core_hdrs} ${zlibrary_core_srcs}
++	  ${zlibrary_ui_qt4_hdrs} ${zlibrary_ui_qt4_srcs}
++	  ${zlibrary_ui_sys_hdrs} ${zlibrary_ui_sys_srcs}
++	  ${zlibrary_text_headers} ${zlibrary_text_srcs}
++	  ${zlibrary_ui_sys_headers} ${ZLIBRARY_ui_sys_srcs}
++	  ${moc_zlibrary_ui_srcs})
++ENDIF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++
+ target_link_libraries(zlibrary ${QT_LIBRARIES})
+diff -ruN onyx-intl-boox-opensource-9124236.org/code/src/feed_reader/CMakeLists.txt onyx-intl-boox-opensource-9124236/code/src/feed_reader/CMakeLists.txt
+--- onyx-intl-boox-opensource-9124236.org/code/src/feed_reader/CMakeLists.txt	2011-01-01 18:13:28.000000000 +0100
++++ onyx-intl-boox-opensource-9124236/code/src/feed_reader/CMakeLists.txt	2011-01-02 12:38:37.469346684 +0100
+@@ -13,7 +13,8 @@
+   widget_updater.h
+ )
+ 
+-add_library(feed_reader_lib feed_action.cpp
++SET(SRCS
++  feed_action.cpp
+   add_feed_dialog.cpp
+   article.cpp
+   article_list_model.cpp
+@@ -32,6 +33,12 @@
+   ${MOC_SRCS}
+ )
+ 
++IF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	add_library(feed_reader_lib ${SRCS})
++ELSE (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	add_library(feed_reader_lib SHARED ${SRCS})
++ENDIF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++
+ set(ONYX_LIBS onyx_sys onyx_ui onyx_wireless onyx_wpa onyx_screen onyx_data onyx_cms)
+ 
+ target_link_libraries(feed_reader_lib  ${QT_LIBRARIES} ${ONYX_LIBS} ${feedreader})
+diff -ruN onyx-intl-boox-opensource-9124236.org/code/src/music_player/CMakeLists.txt onyx-intl-boox-opensource-9124236/code/src/music_player/CMakeLists.txt
+--- onyx-intl-boox-opensource-9124236.org/code/src/music_player/CMakeLists.txt	2011-01-01 18:13:28.000000000 +0100
++++ onyx-intl-boox-opensource-9124236/code/src/music_player/CMakeLists.txt	2011-01-02 12:32:36.774348948 +0100
+@@ -51,7 +51,12 @@
+ 
+ QT4_ADD_RESOURCES(MUSIC_PLAYER_RES music_player.qrc)
+ 
+-ADD_LIBRARY(music_player_lib ${SRCS} ${MUSIC_PLAYER_RES})
++IF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	ADD_LIBRARY(music_player_lib ${SRCS} ${MUSIC_PLAYER_RES})
++ELSE (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	ADD_LIBRARY(music_player_lib SHARED ${SRCS} ${MUSIC_PLAYER_RES})
++ENDIF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++
+ TARGET_LINK_LIBRARIES(music_player_lib
+    onyx_screen
+    sound
+diff -ruN onyx-intl-boox-opensource-9124236.org/code/src/music_player/libcurl/curl/curlbuild.h onyx-intl-boox-opensource-9124236/code/src/music_player/libcurl/curl/curlbuild.h
+--- onyx-intl-boox-opensource-9124236.org/code/src/music_player/libcurl/curl/curlbuild.h	2011-01-01 18:13:28.000000000 +0100
++++ onyx-intl-boox-opensource-9124236/code/src/music_player/libcurl/curl/curlbuild.h	2011-01-02 12:32:36.778348936 +0100
+@@ -1,584 +1,192 @@
+-#ifndef __CURL_CURLBUILD_H
+-#define __CURL_CURLBUILD_H
+-/***************************************************************************
+- *                                  _   _ ____  _
+- *  Project                     ___| | | |  _ \| |
+- *                             / __| | | | |_) | |
+- *                            | (__| |_| |  _ <| |___
+- *                             \___|\___/|_| \_\_____|
+- *
+- * Copyright (C) 1998 - 2009, Daniel Stenberg, <daniel@haxx.se>, et al.
+- *
+- * This software is licensed as described in the file COPYING, which
+- * you should have received as part of this distribution. The terms
+- * are also available at http://curl.haxx.se/docs/copyright.html.
+- *
+- * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+- * copies of the Software, and permit persons to whom the Software is
+- * furnished to do so, under the terms of the COPYING file.
+- *
+- * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+- * KIND, either express or implied.
+- *
+- * $Id: curlbuild.h.dist,v 1.28 2009-05-12 01:57:54 yangtse Exp $
+- ***************************************************************************/
+-
+-/* ================================================================ */
+-/*               NOTES FOR CONFIGURE CAPABLE SYSTEMS                */
+-/* ================================================================ */
+-
+-/*
+- * NOTE 1:
+- * -------
+- *
+- * See file include/curl/curlbuild.h.in, run configure, and forget
+- * that this file exists it is only used for non-configure systems.
+- * But you can keep reading if you want ;-)
+- *
+- */
+-
+-/* ================================================================ */
+-/*                 NOTES FOR NON-CONFIGURE SYSTEMS                  */
+-/* ================================================================ */
+-
+-/*
+- * NOTE 1:
+- * -------
+- *
+- * Nothing in this file is intended to be modified or adjusted by the
+- * curl library user nor by the curl library builder.
+- *
+- * If you think that something actually needs to be changed, adjusted
+- * or fixed in this file, then, report it on the libcurl development
+- * mailing list: http://cool.haxx.se/mailman/listinfo/curl-library/
+- *
+- * Try to keep one section per platform, compiler and architecture,
+- * otherwise, if an existing section is reused for a different one and
+- * later on the original is adjusted, probably the piggybacking one can
+- * be adversely changed.
+- *
+- * In order to differentiate between platforms/compilers/architectures
+- * use only compiler built in predefined preprocessor symbols.
+- *
+- * This header file shall only export symbols which are 'curl' or 'CURL'
+- * prefixed, otherwise public name space would be polluted.
+- *
+- * NOTE 2:
+- * -------
+- *
+- * For any given platform/compiler curl_off_t must be typedef'ed to a
+- * 64-bit wide signed integral data type. The width of this data type
+- * must remain constant and independant of any possible large file
+- * support settings.
+- *
+- * As an exception to the above, curl_off_t shall be typedef'ed to a
+- * 32-bit wide signed integral data type if there is no 64-bit type.
+- *
+- * As a general rule, curl_off_t shall not be mapped to off_t. This
+- * rule shall only be violated if off_t is the only 64-bit data type
+- * available and the size of off_t is independant of large file support
+- * settings. Keep your build on the safe side avoiding an off_t gating.
+- * If you have a 64-bit off_t then take for sure that another 64-bit
+- * data type exists, dig deeper and you will find it.
+- *
+- * NOTE 3:
+- * -------
+- *
+- * Right now you might be staring at file include/curl/curlbuild.h.dist or
+- * at file include/curl/curlbuild.h, this is due to the following reason:
+- * file include/curl/curlbuild.h.dist is renamed to include/curl/curlbuild.h
+- * when the libcurl source code distribution archive file is created.
+- *
+- * File include/curl/curlbuild.h.dist is not included in the distribution
+- * archive. File include/curl/curlbuild.h is not present in the CVS tree.
+- *
+- * The distributed include/curl/curlbuild.h file is only intended to be used
+- * on systems which can not run the also distributed configure script.
+- *
+- * On systems capable of running the configure script, the configure process
+- * will overwrite the distributed include/curl/curlbuild.h file with one that
+- * is suitable and specific to the library being configured and built, which
+- * is generated from the include/curl/curlbuild.h.in template file.
+- *
+- * If you check out from CVS on a non-configure platform, you must run the
+- * appropriate buildconf* script to set up curlbuild.h and other local files.
+- *
+- */
+-
+-/* ================================================================ */
+-/*  DEFINITION OF THESE SYMBOLS SHALL NOT TAKE PLACE ANYWHERE ELSE  */
+-/* ================================================================ */
+-
+-#ifdef CURL_SIZEOF_LONG
+-#  error "CURL_SIZEOF_LONG shall not be defined except in curlbuild.h"
+-   Error Compilation_aborted_CURL_SIZEOF_LONG_already_defined
+-#endif
+-
+-#ifdef CURL_TYPEOF_CURL_SOCKLEN_T
+-#  error "CURL_TYPEOF_CURL_SOCKLEN_T shall not be defined except in curlbuild.h"
+-   Error Compilation_aborted_CURL_TYPEOF_CURL_SOCKLEN_T_already_defined
+-#endif
+-
+-#ifdef CURL_SIZEOF_CURL_SOCKLEN_T
+-#  error "CURL_SIZEOF_CURL_SOCKLEN_T shall not be defined except in curlbuild.h"
+-   Error Compilation_aborted_CURL_SIZEOF_CURL_SOCKLEN_T_already_defined
+-#endif
+-
+-#ifdef CURL_TYPEOF_CURL_OFF_T
+-#  error "CURL_TYPEOF_CURL_OFF_T shall not be defined except in curlbuild.h"
+-   Error Compilation_aborted_CURL_TYPEOF_CURL_OFF_T_already_defined
+-#endif
+-
+-#ifdef CURL_FORMAT_CURL_OFF_T
+-#  error "CURL_FORMAT_CURL_OFF_T shall not be defined except in curlbuild.h"
+-   Error Compilation_aborted_CURL_FORMAT_CURL_OFF_T_already_defined
+-#endif
+-
+-#ifdef CURL_FORMAT_CURL_OFF_TU
+-#  error "CURL_FORMAT_CURL_OFF_TU shall not be defined except in curlbuild.h"
+-   Error Compilation_aborted_CURL_FORMAT_CURL_OFF_TU_already_defined
+-#endif
+-
+-#ifdef CURL_FORMAT_OFF_T
+-#  error "CURL_FORMAT_OFF_T shall not be defined except in curlbuild.h"
+-   Error Compilation_aborted_CURL_FORMAT_OFF_T_already_defined
+-#endif
+-
+-#ifdef CURL_SIZEOF_CURL_OFF_T
+-#  error "CURL_SIZEOF_CURL_OFF_T shall not be defined except in curlbuild.h"
+-   Error Compilation_aborted_CURL_SIZEOF_CURL_OFF_T_already_defined
+-#endif
+-
+-#ifdef CURL_SUFFIX_CURL_OFF_T
+-#  error "CURL_SUFFIX_CURL_OFF_T shall not be defined except in curlbuild.h"
+-   Error Compilation_aborted_CURL_SUFFIX_CURL_OFF_T_already_defined
+-#endif
+-
+-#ifdef CURL_SUFFIX_CURL_OFF_TU
+-#  error "CURL_SUFFIX_CURL_OFF_TU shall not be defined except in curlbuild.h"
+-   Error Compilation_aborted_CURL_SUFFIX_CURL_OFF_TU_already_defined
+-#endif
+-
+-/* ================================================================ */
+-/*    EXTERNAL INTERFACE SETTINGS FOR NON-CONFIGURE SYSTEMS ONLY    */
+-/* ================================================================ */
+-
+-#if defined(__DJGPP__) || defined(__GO32__)
+-#  if defined(__DJGPP__) && (__DJGPP__ > 1)
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     long long
+-#    define CURL_FORMAT_CURL_OFF_T     "lld"
+-#    define CURL_FORMAT_CURL_OFF_TU    "llu"
+-#    define CURL_FORMAT_OFF_T          "%lld"
+-#    define CURL_SIZEOF_CURL_OFF_T     8
+-#    define CURL_SUFFIX_CURL_OFF_T     LL
+-#    define CURL_SUFFIX_CURL_OFF_TU    ULL
+-#  else
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     long
+-#    define CURL_FORMAT_CURL_OFF_T     "ld"
+-#    define CURL_FORMAT_CURL_OFF_TU    "lu"
+-#    define CURL_FORMAT_OFF_T          "%ld"
+-#    define CURL_SIZEOF_CURL_OFF_T     4
+-#    define CURL_SUFFIX_CURL_OFF_T     L
+-#    define CURL_SUFFIX_CURL_OFF_TU    UL
+-#  endif
+-#  define CURL_TYPEOF_CURL_SOCKLEN_T int
+-#  define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-
+-#elif defined(__SALFORDC__)
+-#  define CURL_SIZEOF_LONG           4
+-#  define CURL_TYPEOF_CURL_OFF_T     long
+-#  define CURL_FORMAT_CURL_OFF_T     "ld"
+-#  define CURL_FORMAT_CURL_OFF_TU    "lu"
+-#  define CURL_FORMAT_OFF_T          "%ld"
+-#  define CURL_SIZEOF_CURL_OFF_T     4
+-#  define CURL_SUFFIX_CURL_OFF_T     L
+-#  define CURL_SUFFIX_CURL_OFF_TU    UL
+-#  define CURL_TYPEOF_CURL_SOCKLEN_T int
+-#  define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-
+-#elif defined(__BORLANDC__)
+-#  if (__BORLANDC__ < 0x520)
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     long
+-#    define CURL_FORMAT_CURL_OFF_T     "ld"
+-#    define CURL_FORMAT_CURL_OFF_TU    "lu"
+-#    define CURL_FORMAT_OFF_T          "%ld"
+-#    define CURL_SIZEOF_CURL_OFF_T     4
+-#    define CURL_SUFFIX_CURL_OFF_T     L
+-#    define CURL_SUFFIX_CURL_OFF_TU    UL
+-#  else
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     __int64
+-#    define CURL_FORMAT_CURL_OFF_T     "I64d"
+-#    define CURL_FORMAT_CURL_OFF_TU    "I64u"
+-#    define CURL_FORMAT_OFF_T          "%I64d"
+-#    define CURL_SIZEOF_CURL_OFF_T     8
+-#    define CURL_SUFFIX_CURL_OFF_T     i64
+-#    define CURL_SUFFIX_CURL_OFF_TU    ui64
+-#  endif
+-#  define CURL_TYPEOF_CURL_SOCKLEN_T int
+-#  define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-
+-#elif defined(__TURBOC__)
+-#  define CURL_SIZEOF_LONG           4
+-#  define CURL_TYPEOF_CURL_OFF_T     long
+-#  define CURL_FORMAT_CURL_OFF_T     "ld"
+-#  define CURL_FORMAT_CURL_OFF_TU    "lu"
+-#  define CURL_FORMAT_OFF_T          "%ld"
+-#  define CURL_SIZEOF_CURL_OFF_T     4
+-#  define CURL_SUFFIX_CURL_OFF_T     L
+-#  define CURL_SUFFIX_CURL_OFF_TU    UL
+-#  define CURL_TYPEOF_CURL_SOCKLEN_T int
+-#  define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-
+-#elif defined(__WATCOMC__)
+-#  if defined(__386__)
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     __int64
+-#    define CURL_FORMAT_CURL_OFF_T     "I64d"
+-#    define CURL_FORMAT_CURL_OFF_TU    "I64u"
+-#    define CURL_FORMAT_OFF_T          "%I64d"
+-#    define CURL_SIZEOF_CURL_OFF_T     8
+-#    define CURL_SUFFIX_CURL_OFF_T     i64
+-#    define CURL_SUFFIX_CURL_OFF_TU    ui64
+-#  else
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     long
+-#    define CURL_FORMAT_CURL_OFF_T     "ld"
+-#    define CURL_FORMAT_CURL_OFF_TU    "lu"
+-#    define CURL_FORMAT_OFF_T          "%ld"
+-#    define CURL_SIZEOF_CURL_OFF_T     4
+-#    define CURL_SUFFIX_CURL_OFF_T     L
+-#    define CURL_SUFFIX_CURL_OFF_TU    UL
+-#  endif
+-#  define CURL_TYPEOF_CURL_SOCKLEN_T int
+-#  define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-
+-#elif defined(__POCC__)
+-#  if (__POCC__ < 280)
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     long
+-#    define CURL_FORMAT_CURL_OFF_T     "ld"
+-#    define CURL_FORMAT_CURL_OFF_TU    "lu"
+-#    define CURL_FORMAT_OFF_T          "%ld"
+-#    define CURL_SIZEOF_CURL_OFF_T     4
+-#    define CURL_SUFFIX_CURL_OFF_T     L
+-#    define CURL_SUFFIX_CURL_OFF_TU    UL
+-#  elif defined(_MSC_VER)
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     __int64
+-#    define CURL_FORMAT_CURL_OFF_T     "I64d"
+-#    define CURL_FORMAT_CURL_OFF_TU    "I64u"
+-#    define CURL_FORMAT_OFF_T          "%I64d"
+-#    define CURL_SIZEOF_CURL_OFF_T     8
+-#    define CURL_SUFFIX_CURL_OFF_T     i64
+-#    define CURL_SUFFIX_CURL_OFF_TU    ui64
+-#  else
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     long long
+-#    define CURL_FORMAT_CURL_OFF_T     "lld"
+-#    define CURL_FORMAT_CURL_OFF_TU    "llu"
+-#    define CURL_FORMAT_OFF_T          "%lld"
+-#    define CURL_SIZEOF_CURL_OFF_T     8
+-#    define CURL_SUFFIX_CURL_OFF_T     LL
+-#    define CURL_SUFFIX_CURL_OFF_TU    ULL
+-#  endif
+-#  define CURL_TYPEOF_CURL_SOCKLEN_T int
+-#  define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-
+-#elif defined(__LCC__)
+-#  define CURL_SIZEOF_LONG           4
+-#  define CURL_TYPEOF_CURL_OFF_T     long
+-#  define CURL_FORMAT_CURL_OFF_T     "ld"
+-#  define CURL_FORMAT_CURL_OFF_TU    "lu"
+-#  define CURL_FORMAT_OFF_T          "%ld"
+-#  define CURL_SIZEOF_CURL_OFF_T     4
+-#  define CURL_SUFFIX_CURL_OFF_T     L
+-#  define CURL_SUFFIX_CURL_OFF_TU    UL
+-#  define CURL_TYPEOF_CURL_SOCKLEN_T int
+-#  define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-
+-#elif defined(__SYMBIAN32__)
+-#  if defined(__EABI__)  /* Treat all ARM compilers equally */
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     long long
+-#    define CURL_FORMAT_CURL_OFF_T     "lld"
+-#    define CURL_FORMAT_CURL_OFF_TU    "llu"
+-#    define CURL_FORMAT_OFF_T          "%lld"
+-#    define CURL_SIZEOF_CURL_OFF_T     8
+-#    define CURL_SUFFIX_CURL_OFF_T     LL
+-#    define CURL_SUFFIX_CURL_OFF_TU    ULL
+-#  elif defined(__CW32__)
+-#    pragma longlong on
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     long long
+-#    define CURL_FORMAT_CURL_OFF_T     "lld"
+-#    define CURL_FORMAT_CURL_OFF_TU    "llu"
+-#    define CURL_FORMAT_OFF_T          "%lld"
+-#    define CURL_SIZEOF_CURL_OFF_T     8
+-#    define CURL_SUFFIX_CURL_OFF_T     LL
+-#    define CURL_SUFFIX_CURL_OFF_TU    ULL
+-#  elif defined(__VC32__)
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     __int64
+-#    define CURL_FORMAT_CURL_OFF_T     "lld"
+-#    define CURL_FORMAT_CURL_OFF_TU    "llu"
+-#    define CURL_FORMAT_OFF_T          "%lld"
+-#    define CURL_SIZEOF_CURL_OFF_T     8
+-#    define CURL_SUFFIX_CURL_OFF_T     LL
+-#    define CURL_SUFFIX_CURL_OFF_TU    ULL
+-#  endif
+-#  define CURL_TYPEOF_CURL_SOCKLEN_T unsigned int
+-#  define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-
+-#elif defined(__MWERKS__)
+-#  define CURL_SIZEOF_LONG           4
+-#  define CURL_TYPEOF_CURL_OFF_T     long long
+-#  define CURL_FORMAT_CURL_OFF_T     "lld"
+-#  define CURL_FORMAT_CURL_OFF_TU    "llu"
+-#  define CURL_FORMAT_OFF_T          "%lld"
+-#  define CURL_SIZEOF_CURL_OFF_T     8
+-#  define CURL_SUFFIX_CURL_OFF_T     LL
+-#  define CURL_SUFFIX_CURL_OFF_TU    ULL
+-#  define CURL_TYPEOF_CURL_SOCKLEN_T int
+-#  define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-
+-#elif defined(_WIN32_WCE)
+-#  define CURL_SIZEOF_LONG           4
+-#  define CURL_TYPEOF_CURL_OFF_T     __int64
+-#  define CURL_FORMAT_CURL_OFF_T     "I64d"
+-#  define CURL_FORMAT_CURL_OFF_TU    "I64u"
+-#  define CURL_FORMAT_OFF_T          "%I64d"
+-#  define CURL_SIZEOF_CURL_OFF_T     8
+-#  define CURL_SUFFIX_CURL_OFF_T     i64
+-#  define CURL_SUFFIX_CURL_OFF_TU    ui64
+-#  define CURL_TYPEOF_CURL_SOCKLEN_T int
+-#  define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-
+-#elif defined(__MINGW32__)
+-#  define CURL_SIZEOF_LONG           4
+-#  define CURL_TYPEOF_CURL_OFF_T     long long
+-#  define CURL_FORMAT_CURL_OFF_T     "I64d"
+-#  define CURL_FORMAT_CURL_OFF_TU    "I64u"
+-#  define CURL_FORMAT_OFF_T          "%I64d"
+-#  define CURL_SIZEOF_CURL_OFF_T     8
+-#  define CURL_SUFFIX_CURL_OFF_T     LL
+-#  define CURL_SUFFIX_CURL_OFF_TU    ULL
+-#  define CURL_TYPEOF_CURL_SOCKLEN_T int
+-#  define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-
+-#elif defined(__VMS)
+-#  if defined(__alpha) || defined(__ia64)
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     long long
+-#    define CURL_FORMAT_CURL_OFF_T     "lld"
+-#    define CURL_FORMAT_CURL_OFF_TU    "llu"
+-#    define CURL_FORMAT_OFF_T          "%lld"
+-#    define CURL_SIZEOF_CURL_OFF_T     8
+-#    define CURL_SUFFIX_CURL_OFF_T     LL
+-#    define CURL_SUFFIX_CURL_OFF_TU    ULL
+-#  else
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     long
+-#    define CURL_FORMAT_CURL_OFF_T     "ld"
+-#    define CURL_FORMAT_CURL_OFF_TU    "lu"
+-#    define CURL_FORMAT_OFF_T          "%ld"
+-#    define CURL_SIZEOF_CURL_OFF_T     4
+-#    define CURL_SUFFIX_CURL_OFF_T     L
+-#    define CURL_SUFFIX_CURL_OFF_TU    UL
+-#  endif
+-#  define CURL_TYPEOF_CURL_SOCKLEN_T unsigned int
+-#  define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-
+-#elif defined(__OS400__)
+-#  if defined(__ILEC400__)
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     long long
+-#    define CURL_FORMAT_CURL_OFF_T     "lld"
+-#    define CURL_FORMAT_CURL_OFF_TU    "llu"
+-#    define CURL_FORMAT_OFF_T          "%lld"
+-#    define CURL_SIZEOF_CURL_OFF_T     8
+-#    define CURL_SUFFIX_CURL_OFF_T     LL
+-#    define CURL_SUFFIX_CURL_OFF_TU    ULL
+-#    define CURL_TYPEOF_CURL_SOCKLEN_T socklen_t
+-#    define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-#    define CURL_PULL_SYS_TYPES_H      1
+-#    define CURL_PULL_SYS_SOCKET_H     1
+-#  endif
+-
+-#elif defined(__MVS__)
+-#  if defined(__IBMC__) || defined(__IBMCPP__)
+-#    if defined(_ILP32)
+-#      define CURL_SIZEOF_LONG           4
+-#    elif defined(_LP64)
+-#      define CURL_SIZEOF_LONG           8
+-#    endif
+-#    if defined(_LONG_LONG)
+-#      define CURL_TYPEOF_CURL_OFF_T     long long
+-#      define CURL_FORMAT_CURL_OFF_T     "lld"
+-#      define CURL_FORMAT_CURL_OFF_TU    "llu"
+-#      define CURL_FORMAT_OFF_T          "%lld"
+-#      define CURL_SIZEOF_CURL_OFF_T     8
+-#      define CURL_SUFFIX_CURL_OFF_T     LL
+-#      define CURL_SUFFIX_CURL_OFF_TU    ULL
+-#    elif defined(_LP64)
+-#      define CURL_TYPEOF_CURL_OFF_T     long
+-#      define CURL_FORMAT_CURL_OFF_T     "ld"
+-#      define CURL_FORMAT_CURL_OFF_TU    "lu"
+-#      define CURL_FORMAT_OFF_T          "%ld"
+-#      define CURL_SIZEOF_CURL_OFF_T     8
+-#      define CURL_SUFFIX_CURL_OFF_T     L
+-#      define CURL_SUFFIX_CURL_OFF_TU    UL
+-#    else
+-#      define CURL_TYPEOF_CURL_OFF_T     long
+-#      define CURL_FORMAT_CURL_OFF_T     "ld"
+-#      define CURL_FORMAT_CURL_OFF_TU    "lu"
+-#      define CURL_FORMAT_OFF_T          "%ld"
+-#      define CURL_SIZEOF_CURL_OFF_T     4
+-#      define CURL_SUFFIX_CURL_OFF_T     L
+-#      define CURL_SUFFIX_CURL_OFF_TU    UL
+-#    endif
+-#    define CURL_TYPEOF_CURL_SOCKLEN_T socklen_t
+-#    define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-#    define CURL_PULL_SYS_TYPES_H      1
+-#    define CURL_PULL_SYS_SOCKET_H     1
+-#  endif
+-
+-#elif defined(__370__)
+-#  if defined(__IBMC__) || defined(__IBMCPP__)
+-#    if defined(_ILP32)
+-#      define CURL_SIZEOF_LONG           4
+-#    elif defined(_LP64)
+-#      define CURL_SIZEOF_LONG           8
+-#    endif
+-#    if defined(_LONG_LONG)
+-#      define CURL_TYPEOF_CURL_OFF_T     long long
+-#      define CURL_FORMAT_CURL_OFF_T     "lld"
+-#      define CURL_FORMAT_CURL_OFF_TU    "llu"
+-#      define CURL_FORMAT_OFF_T          "%lld"
+-#      define CURL_SIZEOF_CURL_OFF_T     8
+-#      define CURL_SUFFIX_CURL_OFF_T     LL
+-#      define CURL_SUFFIX_CURL_OFF_TU    ULL
+-#    elif defined(_LP64)
+-#      define CURL_TYPEOF_CURL_OFF_T     long
+-#      define CURL_FORMAT_CURL_OFF_T     "ld"
+-#      define CURL_FORMAT_CURL_OFF_TU    "lu"
+-#      define CURL_FORMAT_OFF_T          "%ld"
+-#      define CURL_SIZEOF_CURL_OFF_T     8
+-#      define CURL_SUFFIX_CURL_OFF_T     L
+-#      define CURL_SUFFIX_CURL_OFF_TU    UL
+-#    else
+-#      define CURL_TYPEOF_CURL_OFF_T     long
+-#      define CURL_FORMAT_CURL_OFF_T     "ld"
+-#      define CURL_FORMAT_CURL_OFF_TU    "lu"
+-#      define CURL_FORMAT_OFF_T          "%ld"
+-#      define CURL_SIZEOF_CURL_OFF_T     4
+-#      define CURL_SUFFIX_CURL_OFF_T     L
+-#      define CURL_SUFFIX_CURL_OFF_TU    UL
+-#    endif
+-#    define CURL_TYPEOF_CURL_SOCKLEN_T socklen_t
+-#    define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-#    define CURL_PULL_SYS_TYPES_H      1
+-#    define CURL_PULL_SYS_SOCKET_H     1
+-#  endif
+-
+-#elif defined(TPF)
+-#  define CURL_SIZEOF_LONG           8
+-#  define CURL_TYPEOF_CURL_OFF_T     long
+-#  define CURL_FORMAT_CURL_OFF_T     "ld"
+-#  define CURL_FORMAT_CURL_OFF_TU    "lu"
+-#  define CURL_FORMAT_OFF_T          "%ld"
+-#  define CURL_SIZEOF_CURL_OFF_T     8
+-#  define CURL_SUFFIX_CURL_OFF_T     L
+-#  define CURL_SUFFIX_CURL_OFF_TU    UL
+-#  define CURL_TYPEOF_CURL_SOCKLEN_T int
+-#  define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-
+-/* ===================================== */
+-/*    KEEP MSVC THE PENULTIMATE ENTRY    */
+-/* ===================================== */
+-
+-#elif defined(_MSC_VER)
+-#  if (_MSC_VER >= 900) && (_INTEGRAL_MAX_BITS >= 64)
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     __int64
+-#    define CURL_FORMAT_CURL_OFF_T     "I64d"
+-#    define CURL_FORMAT_CURL_OFF_TU    "I64u"
+-#    define CURL_FORMAT_OFF_T          "%I64d"
+-#    define CURL_SIZEOF_CURL_OFF_T     8
+-#    define CURL_SUFFIX_CURL_OFF_T     i64
+-#    define CURL_SUFFIX_CURL_OFF_TU    ui64
+-#  else
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     long
+-#    define CURL_FORMAT_CURL_OFF_T     "ld"
+-#    define CURL_FORMAT_CURL_OFF_TU    "lu"
+-#    define CURL_FORMAT_OFF_T          "%ld"
+-#    define CURL_SIZEOF_CURL_OFF_T     4
+-#    define CURL_SUFFIX_CURL_OFF_T     L
+-#    define CURL_SUFFIX_CURL_OFF_TU    UL
+-#  endif
+-#  define CURL_TYPEOF_CURL_SOCKLEN_T int
+-#  define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-
+-/* ===================================== */
+-/*    KEEP GENERIC GCC THE LAST ENTRY    */
+-/* ===================================== */
+-
+-#elif defined(__GNUC__)
+-#  if defined(__i386__) || defined(__ppc__)
+-#    define CURL_SIZEOF_LONG           4
+-#    define CURL_TYPEOF_CURL_OFF_T     long long
+-#    define CURL_FORMAT_CURL_OFF_T     "lld"
+-#    define CURL_FORMAT_CURL_OFF_TU    "llu"
+-#    define CURL_FORMAT_OFF_T          "%lld"
+-#    define CURL_SIZEOF_CURL_OFF_T     8
+-#    define CURL_SUFFIX_CURL_OFF_T     LL
+-#    define CURL_SUFFIX_CURL_OFF_TU    ULL
+-#  elif defined(__x86_64__) || defined(__ppc64__)
+-#    define CURL_SIZEOF_LONG           8
+-#    define CURL_TYPEOF_CURL_OFF_T     long
+-#    define CURL_FORMAT_CURL_OFF_T     "ld"
+-#    define CURL_FORMAT_CURL_OFF_TU    "lu"
+-#    define CURL_FORMAT_OFF_T          "%ld"
+-#    define CURL_SIZEOF_CURL_OFF_T     8
+-#    define CURL_SUFFIX_CURL_OFF_T     L
+-#    define CURL_SUFFIX_CURL_OFF_TU    UL
+-#  endif
+-#  define CURL_TYPEOF_CURL_SOCKLEN_T socklen_t
+-#  define CURL_SIZEOF_CURL_SOCKLEN_T 4
+-#  define CURL_PULL_SYS_TYPES_H      1
+-#  define CURL_PULL_SYS_SOCKET_H     1
+-
+-#else
+-#  error "Unknown non-configure build target!"
+-   Error Compilation_aborted_Unknown_non_configure_build_target
+-#endif
+-
+-/* CURL_PULL_SYS_TYPES_H is defined above when inclusion of header file  */
+-/* sys/types.h is required here to properly make type definitions below. */
+-#ifdef CURL_PULL_SYS_TYPES_H
+-#  include <sys/types.h>
+-#endif
+-
+-/* CURL_PULL_SYS_SOCKET_H is defined above when inclusion of header file  */
+-/* sys/socket.h is required here to properly make type definitions below. */
+-#ifdef CURL_PULL_SYS_SOCKET_H
+-#  include <sys/socket.h>
+-#endif
+-
+-/* Data type definition of curl_socklen_t. */
+-
+-#ifdef CURL_TYPEOF_CURL_SOCKLEN_T
+-  typedef CURL_TYPEOF_CURL_SOCKLEN_T curl_socklen_t;
+-#endif
+-
+-/* Data type definition of curl_off_t. */
+-
+-#ifdef CURL_TYPEOF_CURL_OFF_T
+-  typedef CURL_TYPEOF_CURL_OFF_T curl_off_t;
+-#endif
+-
+-#endif /* __CURL_CURLBUILD_H */
++/* include/curl/curlbuild.h.  Generated from curlbuild.h.in by configure.  */
++#ifndef __CURL_CURLBUILD_H
++#define __CURL_CURLBUILD_H
++/***************************************************************************
++ *                                  _   _ ____  _
++ *  Project                     ___| | | |  _ \| |
++ *                             / __| | | | |_) | |
++ *                            | (__| |_| |  _ <| |___
++ *                             \___|\___/|_| \_\_____|
++ *
++ * Copyright (C) 1998 - 2009, Daniel Stenberg, <daniel@haxx.se>, et al.
++ *
++ * This software is licensed as described in the file COPYING, which
++ * you should have received as part of this distribution. The terms
++ * are also available at http://curl.haxx.se/docs/copyright.html.
++ *
++ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
++ * copies of the Software, and permit persons to whom the Software is
++ * furnished to do so, under the terms of the COPYING file.
++ *
++ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
++ * KIND, either express or implied.
++ *
++ * $Id: curlbuild.h.in,v 1.8 2009-04-29 15:15:38 yangtse Exp $
++ ***************************************************************************/
++
++/* ================================================================ */
++/*               NOTES FOR CONFIGURE CAPABLE SYSTEMS                */
++/* ================================================================ */
++
++/*
++ * NOTE 1:
++ * -------
++ *
++ * Nothing in this file is intended to be modified or adjusted by the
++ * curl library user nor by the curl library builder.
++ *
++ * If you think that something actually needs to be changed, adjusted
++ * or fixed in this file, then, report it on the libcurl development
++ * mailing list: http://cool.haxx.se/mailman/listinfo/curl-library/
++ *
++ * This header file shall only export symbols which are 'curl' or 'CURL'
++ * prefixed, otherwise public name space would be polluted.
++ *
++ * NOTE 2:
++ * -------
++ *
++ * Right now you might be staring at file include/curl/curlbuild.h.in or
++ * at file include/curl/curlbuild.h, this is due to the following reason:
++ *
++ * On systems capable of running the configure script, the configure process
++ * will overwrite the distributed include/curl/curlbuild.h file with one that
++ * is suitable and specific to the library being configured and built, which
++ * is generated from the include/curl/curlbuild.h.in template file.
++ *
++ */
++
++/* ================================================================ */
++/*  DEFINITION OF THESE SYMBOLS SHALL NOT TAKE PLACE ANYWHERE ELSE  */
++/* ================================================================ */
++
++#ifdef CURL_SIZEOF_LONG
++#  error "CURL_SIZEOF_LONG shall not be defined except in curlbuild.h"
++   Error Compilation_aborted_CURL_SIZEOF_LONG_already_defined
++#endif
++
++#ifdef CURL_TYPEOF_CURL_SOCKLEN_T
++#  error "CURL_TYPEOF_CURL_SOCKLEN_T shall not be defined except in curlbuild.h"
++   Error Compilation_aborted_CURL_TYPEOF_CURL_SOCKLEN_T_already_defined
++#endif
++
++#ifdef CURL_SIZEOF_CURL_SOCKLEN_T
++#  error "CURL_SIZEOF_CURL_SOCKLEN_T shall not be defined except in curlbuild.h"
++   Error Compilation_aborted_CURL_SIZEOF_CURL_SOCKLEN_T_already_defined
++#endif
++
++#ifdef CURL_TYPEOF_CURL_OFF_T
++#  error "CURL_TYPEOF_CURL_OFF_T shall not be defined except in curlbuild.h"
++   Error Compilation_aborted_CURL_TYPEOF_CURL_OFF_T_already_defined
++#endif
++
++#ifdef CURL_FORMAT_CURL_OFF_T
++#  error "CURL_FORMAT_CURL_OFF_T shall not be defined except in curlbuild.h"
++   Error Compilation_aborted_CURL_FORMAT_CURL_OFF_T_already_defined
++#endif
++
++#ifdef CURL_FORMAT_CURL_OFF_TU
++#  error "CURL_FORMAT_CURL_OFF_TU shall not be defined except in curlbuild.h"
++   Error Compilation_aborted_CURL_FORMAT_CURL_OFF_TU_already_defined
++#endif
++
++#ifdef CURL_FORMAT_OFF_T
++#  error "CURL_FORMAT_OFF_T shall not be defined except in curlbuild.h"
++   Error Compilation_aborted_CURL_FORMAT_OFF_T_already_defined
++#endif
++
++#ifdef CURL_SIZEOF_CURL_OFF_T
++#  error "CURL_SIZEOF_CURL_OFF_T shall not be defined except in curlbuild.h"
++   Error Compilation_aborted_CURL_SIZEOF_CURL_OFF_T_already_defined
++#endif
++
++#ifdef CURL_SUFFIX_CURL_OFF_T
++#  error "CURL_SUFFIX_CURL_OFF_T shall not be defined except in curlbuild.h"
++   Error Compilation_aborted_CURL_SUFFIX_CURL_OFF_T_already_defined
++#endif
++
++#ifdef CURL_SUFFIX_CURL_OFF_TU
++#  error "CURL_SUFFIX_CURL_OFF_TU shall not be defined except in curlbuild.h"
++   Error Compilation_aborted_CURL_SUFFIX_CURL_OFF_TU_already_defined
++#endif
++
++/* ================================================================ */
++/*  EXTERNAL INTERFACE SETTINGS FOR CONFIGURE CAPABLE SYSTEMS ONLY  */
++/* ================================================================ */
++
++/* Configure process defines this to 1 when it finds out that system  */
++/* header file ws2tcpip.h must be included by the external interface. */
++/* #undef CURL_PULL_WS2TCPIP_H */
++#ifdef CURL_PULL_WS2TCPIP_H
++#  ifndef WIN32_LEAN_AND_MEAN
++#    define WIN32_LEAN_AND_MEAN
++#  endif
++#  include <windows.h>
++#  include <winsock2.h>
++#  include <ws2tcpip.h>
++#endif
++
++/* Configure process defines this to 1 when it finds out that system   */
++/* header file sys/types.h must be included by the external interface. */
++#define CURL_PULL_SYS_TYPES_H 1
++#ifdef CURL_PULL_SYS_TYPES_H
++#  include <sys/types.h>
++#endif
++
++/* Configure process defines this to 1 when it finds out that system */
++/* header file stdint.h must be included by the external interface.  */
++#define CURL_PULL_STDINT_H 1
++#ifdef CURL_PULL_STDINT_H
++#  include <stdint.h>
++#endif
++
++/* Configure process defines this to 1 when it finds out that system  */
++/* header file inttypes.h must be included by the external interface. */
++#define CURL_PULL_INTTYPES_H 1
++#ifdef CURL_PULL_INTTYPES_H
++#  include <inttypes.h>
++#endif
++
++/* Configure process defines this to 1 when it finds out that system    */
++/* header file sys/socket.h must be included by the external interface. */
++#define CURL_PULL_SYS_SOCKET_H 1
++#ifdef CURL_PULL_SYS_SOCKET_H
++#  include <sys/socket.h>
++#endif
++
++/* The size of `long', as computed by sizeof. */
++#define CURL_SIZEOF_LONG 4
++
++/* Integral data type used for curl_socklen_t. */
++#define CURL_TYPEOF_CURL_SOCKLEN_T socklen_t
++
++/* The size of `curl_socklen_t', as computed by sizeof. */
++#define CURL_SIZEOF_CURL_SOCKLEN_T 4
++
++/* Data type definition of curl_socklen_t. */
++typedef CURL_TYPEOF_CURL_SOCKLEN_T curl_socklen_t;
++
++/* Signed integral data type used for curl_off_t. */
++#define CURL_TYPEOF_CURL_OFF_T int64_t
++
++/* Data type definition of curl_off_t. */
++typedef CURL_TYPEOF_CURL_OFF_T curl_off_t;
++
++/* curl_off_t formatting string directive without "%" conversion specifier. */
++#define CURL_FORMAT_CURL_OFF_T "lld"
++
++/* unsigned curl_off_t formatting string without "%" conversion specifier. */
++#define CURL_FORMAT_CURL_OFF_TU "llu"
++
++/* curl_off_t formatting string directive with "%" conversion specifier. */
++#define CURL_FORMAT_OFF_T "%lld"
++
++/* The size of `curl_off_t', as computed by sizeof. */
++#define CURL_SIZEOF_CURL_OFF_T 8
++
++/* curl_off_t constant suffix. */
++#define CURL_SUFFIX_CURL_OFF_T LL
++
++/* unsigned curl_off_t constant suffix. */
++#define CURL_SUFFIX_CURL_OFF_TU ULL
++
++#endif /* __CURL_CURLBUILD_H */
+diff -ruN onyx-intl-boox-opensource-9124236.org/code/src/sudoku/CMakeLists.txt onyx-intl-boox-opensource-9124236/code/src/sudoku/CMakeLists.txt
+--- onyx-intl-boox-opensource-9124236.org/code/src/sudoku/CMakeLists.txt	2011-01-01 18:13:28.000000000 +0100
++++ onyx-intl-boox-opensource-9124236/code/src/sudoku/CMakeLists.txt	2011-01-02 12:32:36.783349606 +0100
+@@ -13,11 +13,9 @@
+ 
+ ADD_EXECUTABLE(sudoku ${SRCS} ${sudoku_RES})
+ TARGET_LINK_LIBRARIES(sudoku
+-  onyxapp
+   onyx_data
+   onyx_screen
+   onyx_ui
+   ${QT_LIBRARIES}
+   ${ADD_LIB}
+ )
+-
+diff -ruN onyx-intl-boox-opensource-9124236.org/third_party/gmock/CMakeLists.txt onyx-intl-boox-opensource-9124236/third_party/gmock/CMakeLists.txt
+--- onyx-intl-boox-opensource-9124236.org/third_party/gmock/CMakeLists.txt	2011-01-01 18:13:28.000000000 +0100
++++ onyx-intl-boox-opensource-9124236/third_party/gmock/CMakeLists.txt	2011-01-02 12:32:36.788342908 +0100
+@@ -1,7 +1,11 @@
+ include_directories(. include)
+ 
+-add_library(gmock
+-  src/gmock-all.cc)
++IF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	add_library(gmock src/gmock-all.cc)
++ELSE (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	add_library(gmock SHARED src/gmock-all.cc)
++ENDIF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++
+ set_target_properties(gmock
+   PROPERTIES
+   COMPILE_FLAGS "-DPATH_MAX=4096")
+diff -ruN onyx-intl-boox-opensource-9124236.org/third_party/gtest/CMakeLists.txt onyx-intl-boox-opensource-9124236/third_party/gtest/CMakeLists.txt
+--- onyx-intl-boox-opensource-9124236.org/third_party/gtest/CMakeLists.txt	2011-01-01 18:13:28.000000000 +0100
++++ onyx-intl-boox-opensource-9124236/third_party/gtest/CMakeLists.txt	2011-01-02 12:32:36.791348428 +0100
+@@ -1,10 +1,19 @@
+ include_directories(.)
+ 
+-add_library(gtest
+-  src/gtest-all.cc)
++IF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	add_library(gtest src/gtest-all.cc)
++ELSE (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	add_library(gtest SHARED src/gtest-all.cc)
++ENDIF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++
+ set_target_properties(gtest
+   PROPERTIES
+   COMPILE_FLAGS "-DPATH_MAX=4096")
+ 
+-add_library(gtest_main src/gtest_main.cc)
++IF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	add_library(gtest_main src/gtest_main.cc)
++ELSE (WIN32 OR ONYX_BUILD_STATIC_LIB)
++	add_library(gtest_main SHARED src/gtest_main.cc)
++ENDIF (WIN32 OR ONYX_BUILD_STATIC_LIB)
++
+ target_link_libraries(gtest_main gtest)

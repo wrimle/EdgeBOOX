@@ -1,0 +1,55 @@
+menu "Individual Package Selection for the target"
+comment "Basic Root Filesystem"
+source "packages/busybox/Config.in"
+source "packages/zlib/Config.in"
+comment "Other"
+source "packages/gdb/Config.in"
+comment "Group packages"
+menuconfig NETWORK_SUPPORT
+        bool "Networking libraries and applications (WLAN/WPA/etc)"
+        default y
+        help
+          Support for networking libraries, wlan-ng, WPA and related
+          packages, graphical toolkits, etc.
+if NETWORK_SUPPORT
+source "packages/wireless_tools/Config.in"
+source "packages/wpa_supplicant/Config.in"
+source "packages/openssl/Config.in"
+endif
+menuconfig GRAPHIC_SUPPORT
+	bool "Graphic libraries and applications (graphics/text)"
+	default y
+	help
+	  Support for graphic libraries, QT-Embedded/GTK+/DirectFB and related
+	  packages, graphical toolkits, etc.
+if GRAPHIC_SUPPORT
+source "packages/qt/Config.in"
+source "packages/onyx/Config.in"
+endif
+menuconfig HW_SUPPORT
+        bool "Hardware handling libraries and applications"
+        default y
+        help
+	  Support for hardware handling and maintenance, block devices,
+	  filesystem creation and maintenance.
+if HW_SUPPORT
+source "packages/udev/Config.in"
+source "packages/tslib/Config.in"
+source "packages/libusb/Config.in"
+source "packages/usbutils/Config.in"
+source "packages/usb_modeswitch/Config.in"
+source "packages/dosfstools/Config.in"
+endif
+menuconfig MISCELLANEOUS
+	bool "Miscellaneous Software"
+	default y
+	help
+	  This section contains miscellaneous software.
+if MISCELLANEOUS
+source "packages/sqlite/Config.in"
+source "packages/curl/Config.in"
+source "packages/expat/Config.in"
+source "packages/freetype/Config.in"
+source "packages/libiconv/Config.in"
+endif
+endmenu

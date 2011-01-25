@@ -1,0 +1,6 @@
+config PACKAGE_FREETYPE
+	bool "freetype"
+	default y
+	help
+
+	http://www.freetype.org/

@@ -1,0 +1,13 @@
+config PACKAGE_GDB_SERVER
+        bool "GDB Server for the Target"
+        default n
+        help
+            Build the gdbserver stub to run on the target.
+            A full gdb is needed to debug the progam.
+
+config PACKAGE_GDB_HOST
+        bool "GDB for the HOST PC"
+        default n
+        help
+             Build gdb to run on the host to debug programs run on the target.
+

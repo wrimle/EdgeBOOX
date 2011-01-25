@@ -1,0 +1,4 @@
+# Default target skeleton stuff, may be overridden
+TARGET_SKELETON=packages/rootfs/generic/skel.tar.gz
+TARGET_SKEL_DIR=packages/rootfs/generic/target_skeleton
+TARGET_DEVICE_TABLE=packages/rootfs/generic/device_table.txt

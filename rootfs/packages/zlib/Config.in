@@ -1,0 +1,8 @@
+config PACKAGE_ZLIB
+	bool "zlib"
+	default y
+	help
+	  Standard (de)compression library.  Used by things like 
+	  gzip and libpng.
+
+	  http://www.gzip.org/zlib/

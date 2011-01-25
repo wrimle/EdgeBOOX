@@ -1,0 +1,5 @@
+config PACKAGE_LIBUSB
+	bool "Lib USB"
+	default y
+	help
+	  Standard USB userspace library.

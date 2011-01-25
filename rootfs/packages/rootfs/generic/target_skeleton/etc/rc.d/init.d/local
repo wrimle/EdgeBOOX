@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# Copyright 2006 Freescale Semiconductor, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+
+if [ -n "$1" -a "$1" != start ]; then
+    exit 0
+fi
+
+# clean up /var/run and /var/lock
+f_rec_rem() {
+    ls -1 |
+    while read f; do
+        test -f "$f" && rm -f "$f"
+        test -d "$f" && { cd "$f" ; f_rec_rem ; }
+    done
+}
+
+# remove stale files from /var/run
+cd /var/run && f_rec_rem
+
+# remove stale files from /var/lock
+cd /var/lock && f_rec_rem
+
+exit 0

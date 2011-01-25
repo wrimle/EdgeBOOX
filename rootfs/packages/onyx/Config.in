@@ -1,0 +1,20 @@
+config PACKAGE_ONYX
+	bool "Onyx libraries and applications"
+	default y
+	help
+ 	 	 
+
+config PACKAGE_ONYX_LIB
+	depends PACKAGE_ONYX
+        bool "Onyx libraries"
+        default y
+        help
+          The Onyx SDK libraries.
+
+
+config PACKAGE_ONYX_APP
+	depends PACKAGE_ONYX && PACKAGE_ONYX_LIB
+	bool "Onyx Applications"
+        default y
+        help
+          The Onyx applications for the Boox 60.
