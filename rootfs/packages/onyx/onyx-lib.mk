@@ -1,4 +1,4 @@
-ONYX_LIB_NAME=onyx-intl-booxsdk-3299a8a
+ONYX_LIB_NAME=onyx-intl-booxsdk-9576c1c
 ONYX_LIB_SOURCE=$(ONYX_LIB_NAME).tar.gz
 ONYX_LIB_DIR=$(BUILD_DIR)/$(ONYX_LIB_NAME)
 
@@ -9,7 +9,7 @@ $(DL_DIR)/$(ONYX_LIB_SOURCE):
 $(ONYX_LIB_DIR)/.unpacked:$(DL_DIR)/$(ONYX_LIB_SOURCE)
 	mkdir -p $(BUILD_DIR)
 	tar -C $(BUILD_DIR) -zxf $(DL_DIR)/$(ONYX_LIB_SOURCE)
-	$(PATCH) $(ONYX_LIB_DIR) packages/onyx $(ONYX_LIB_NAME).patch
+	$(PATCH) $(ONYX_LIB_DIR) packages/onyx onyx-intl-booxsdk-\*.patch
 	touch $(ONYX_LIB_DIR)/.unpacked
 
 $(ONYX_LIB_DIR)/.configured:$(ONYX_LIB_DIR)/.unpacked

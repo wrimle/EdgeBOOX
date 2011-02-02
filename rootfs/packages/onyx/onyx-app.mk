@@ -1,4 +1,4 @@
-ONYX_APP_NAME=onyx-intl-boox-opensource-9124236
+ONYX_APP_NAME=onyx-intl-boox-opensource-880f440
 ONYX_APP_SOURCE=$(ONYX_APP_NAME).tar.gz
 ONYX_APP_DIR=$(BUILD_DIR)/$(ONYX_APP_NAME)
 
@@ -9,7 +9,7 @@ $(DL_DIR)/$(ONYX_APP_SOURCE):
 $(ONYX_APP_DIR)/.unpacked:$(DL_DIR)/$(ONYX_APP_SOURCE)
 	mkdir -p $(BUILD_DIR)
 	tar -C $(BUILD_DIR) -zxf $(DL_DIR)/$(ONYX_APP_SOURCE)
-	$(PATCH) $(ONYX_APP_DIR) packages/onyx $(ONYX_APP_NAME).patch
+	$(PATCH) $(ONYX_APP_DIR) packages/onyx onyx-intl-boox-opensource-\*.patch
 	touch $(ONYX_APP_DIR)/.unpacked
 
 $(ONYX_APP_DIR)/.configured:$(ONYX_APP_DIR)/.unpacked
