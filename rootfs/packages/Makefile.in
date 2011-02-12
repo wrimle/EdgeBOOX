@@ -1,4 +1,13 @@
-MAKE=make
+ifndef MAKE
+MAKE:=make
+endif
+ifndef HOSTMAKE
+HOSTMAKE=$(MAKE)
+endif
+HOSTMAKE :=$(shell which $(HOSTMAKE) || type -p $(HOSTMAKE) || echo make)
+
+MAKE1:=$(HOSTMAKE) -j1
+MAKE:=$(HOSTMAKE) -j$(JLEVEL)
 
 WGET:=wget --passive-ftp -nd
 SED:=sed -e

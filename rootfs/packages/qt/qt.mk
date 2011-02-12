@@ -16,10 +16,10 @@ $(QT_DIR)/.patched:$(QT_DIR)/.unpacked
 $(QT_DIR)/.configured:$(QT_DIR)/.patched
 	(cd $(QT_DIR); \
 		export QTDIR=$(QT_DIR); \
+		export PKG_CONFIG_PATH=$(HOST_DIR)$(EPREFIX)/lib/pkgconfig; \
 		echo QMAKE_INCDIR=$(HOST_DIR)$(EPREFIX)/include >> $(QT_DIR)/mkspecs/qws/linux-arm-g++/qmake.conf; \
 		echo QMAKE_LIBDIR=$(HOST_DIR)$(EPREFIX)/lib >> $(QT_DIR)/mkspecs/qws/linux-arm-g++/qmake.conf; \
-		(echo o;echo yes) | TOOLCHAIN_PATH=$(HOST_DIR)$(EPREFIX) \
-			./configure \
+		(echo o;echo yes) | ./configure \
 			-prefix $(EPREFIX) \
 			-release \
 			-shared \
@@ -53,6 +53,7 @@ $(QT_DIR)/.configured:$(QT_DIR)/.patched
 			-nomake tools \
 			-nomake examples \
 			-nomake demos \
+			-force-pkg-config \
 	);
 	touch $(QT_DIR)/.configured
 
