@@ -46,9 +46,7 @@ $(QT_DIR)/.configured:$(QT_DIR)/.patched
 			-qt-freetype \
 			-depths 8 \
 			-qt-decoration-windows \
-			-plugin-gfx-linuxfb \
 			-plugin-gfx-transformed \
-			-plugin-mouse-tslib \
 			-no-glib \
 			-nomake tools \
 			-nomake examples \
