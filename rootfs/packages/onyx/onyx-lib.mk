@@ -9,7 +9,7 @@ $(DL_DIR)/$(ONYX_LIB_SOURCE):
 $(ONYX_LIB_DIR)/.unpacked:$(DL_DIR)/$(ONYX_LIB_SOURCE)
 	mkdir -p $(BUILD_DIR)
 	tar -C $(BUILD_DIR) -zxf $(DL_DIR)/$(ONYX_LIB_SOURCE)
-	$(PATCH) $(ONYX_LIB_DIR) packages/onyx onyx-intl-booxsdk-\*.patch
+	$(PATCH) $(ONYX_LIB_DIR) packages/onyx onyx-intl-booxsdk\*.patch
 	touch $(ONYX_LIB_DIR)/.unpacked
 
 $(ONYX_LIB_DIR)/.configured:$(ONYX_LIB_DIR)/.unpacked
@@ -30,6 +30,8 @@ $(ONYX_LIB_DIR)/libs/libonyx_ui.so:$(ONYX_LIB_DIR)/.configured
 $(HOST_DIR)$(EPREFIX)/lib/libonyx_ui.so:$(ONYX_LIB_DIR)/libs/libonyx_ui.so
 	cp -dpR $(ONYX_LIB_DIR)/code/include/onyx $(HOST_DIR)$(EPREFIX)/include/
 	cp -dpf $(ONYX_LIB_DIR)/libs/*.so $(HOST_DIR)$(EPREFIX)/lib/
+	mkdir -p $(HOST_DIR)$(EPREFIX)/lib/static/
+	cp -dpf $(ONYX_LIB_DIR)/libs/*.a $(HOST_DIR)$(EPREFIX)/lib/static/
 	touch -c $(HOST_DIR)$(EPREFIX)/lib/libonyx_ui.so
 
 $(TARGET_DIR)$(EPREFIX)/lib/libonyx_ui.so:$(HOST_DIR)$(EPREFIX)/lib/libonyx_ui.so
