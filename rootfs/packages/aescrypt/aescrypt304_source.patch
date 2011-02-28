@@ -1,0 +1,29 @@
+diff -ruN aescrypt304_source.org/aescrypt.c aescrypt304_source/aescrypt.c
+--- aescrypt304_source.org/aescrypt.c	2009-01-24 19:49:19.000000000 +0100
++++ aescrypt304_source/aescrypt.c	2011-02-21 17:43:33.211762075 +0100
+@@ -904,10 +904,8 @@
+             case 'p':
+                 if (optarg != 0)
+                 {
+-                    passlen = passwd_to_utf16(  optarg,
+-                                                strlen(optarg),
+-                                                MAX_PASSWD_LEN+1,
+-                                                pass);
++                    passlen = strlen(strcpy(pass,optarg));
++
+                     if (passlen < 0)
+                     {
+                         cleanup(outfile);
+@@ -980,10 +978,8 @@
+                 return -1;
+         }
+ 
+-        passlen = passwd_to_utf16(  pass_input,
+-                                    strlen(pass_input),
+-                                    MAX_PASSWD_LEN+1,
+-                                    pass);
++        passlen = strlen(strcpy(pass,optarg));
++
+         if (passlen < 0)
+         {
+             cleanup(outfile);

@@ -67,11 +67,12 @@ $(PACKAGE_DIR)/.unpacked: packages/rootfs/yaffs2/packaging.tar.gz
 	tar -C $(PACKAGE_DIR) -xzf packages/rootfs/yaffs2/packaging.tar.gz
 	touch $(PACKAGE_DIR)/.unpacked
 
-$(BOOX_PACKAGE_TARGET): yaffs2root $(PACKAGE_DIR)/.unpacked
+$(BOOX_PACKAGE_TARGET): yaffs2root aescrypt $(PACKAGE_DIR)/.unpacked
 	echo "$(BOOX_VERSION) $(shell date +"%Y%m%d")" > $(PACKAGE_DIR)/onyx_update/version
 	@cp -f $(YAFFS2_TARGET) $(PACKAGE_DIR)/opt/freescale/ltib
 	(cd $(PACKAGE_DIR);tar --owner=root --group=root -czf $(PACKAGE_DIR)/onyx_update/images/rootfs.tar.gz opt/)
 	(cd $(PACKAGE_DIR);tar --owner=root --group=root -czf $(BOOX_PACKAGE_TARGET) onyx_update/)
+	-@$(HOST_DIR)/usr/bin/aescrypt -e -p a8wZ49?b -o $(BOOX_PACKAGE_TARGET).upd $(BOOX_PACKAGE_TARGET)
 
 yaffs2root-source: mkyaffs2image-source
 
