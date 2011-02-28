@@ -1,18 +1,18 @@
 TSLIB_SOURCE=tslib.tar.gz
 TSLIB_DIR=$(BUILD_DIR)/tslib
-TSLIB_CFLAGS=-fPIC -DGCC_HASCLASSVISIBILITY 
+TSLIB_CFLAGS=-fPIC -DGCC_HASCLASSVISIBILITY
 
 $(DL_DIR)/$(TSLIB_SOURCE):
 	$(WGET) -P $(DL_DIR) $(DOWNLOAD_SITE)/$(TSLIB_SOURCE)
 
-$(TSLIB_DIR)/.unpacked:$(DL_DIR)/$(TSLIB_SOURCE)
+$(TSLIB_DIR)/.unpacked: $(DL_DIR)/$(TSLIB_SOURCE)
 	tar -C $(BUILD_DIR) -xzf $(DL_DIR)/$(TSLIB_SOURCE)
 	touch $(TSLIB_DIR)/.unpacked
 
-$(TSLIB_DIR)/.patched:$(TSLIB_DIR)/.unpacked
+$(TSLIB_DIR)/.patched: $(TSLIB_DIR)/.unpacked
 	touch $(TSLIB_DIR)/.patched
 
-$(TSLIB_DIR)/.configured:$(TSLIB_DIR)/.patched
+$(TSLIB_DIR)/.configured: $(TSLIB_DIR)/.patched
 	(cd $(TSLIB_DIR); \
 		configure; \
 		CFLAGS="$(TARGET_CFLAGS) $(TSLIB_CFLAGS)" \
@@ -33,20 +33,19 @@ $(TSLIB_DIR)/.configured:$(TSLIB_DIR)/.patched
 	);
 	touch $(TSLIB_DIR)/.configured
 
-$(TSLIB_DIR)/.built:$(TSLIB_DIR)/.configured
+$(TSLIB_DIR)/src/.libs/libts-1.0.so.0.0.0: $(TSLIB_DIR)/.configured
 	$(MAKE) CC=$(TARGET_CC) -C $(TSLIB_DIR)
-	touch $(TSLIB_DIR)/.built
+	touch -c $(TSLIB_DIR)/src/.libs/libts-1.0.so.0.0.0
 
-
-$(TSLIB_DIR)/.installed:$(TSLIB_DIR)/.built
-	$(MAKE) LD=$(TARGET_LD) DESTDIR=$(HOST_DIR) -C $(TSLIB_DIR) install
+$(HOST_DIR)$(EPREFIX)/lib/libts-1.0.so.0.0.0: $(TSLIB_DIR)/src/.libs/libts-1.0.so.0.0.0
+	$(MAKE) DESTDIR=$(HOST_DIR) -C $(TSLIB_DIR) install
 
 	mv $(HOST_DIR)$(EPREFIX)/lib/libts.la $(HOST_DIR)$(EPREFIX)/lib/libts.la.old
 	$(SED) "s,^libdir=.*,libdir=\'$(HOST_DIR)$(EPREFIX)/lib\',g" $(HOST_DIR)$(EPREFIX)/lib/libts.la.old > $(HOST_DIR)$(EPREFIX)/lib/libts.la
 
-	touch $(TSLIB_DIR)/.installed
+	touch -c $(HOST_DIR)$(EPREFIX)/lib/libts-1.0.so.0.0.0
 
-$(TARGET_DIR)$(EPREFIX)/lib/libts-1.0.so.0.0.0:$(TSLIB_DIR)/.installed
+$(TARGET_DIR)$(EPREFIX)/lib/libts-1.0.so.0.0.0: $(HOST_DIR)$(EPREFIX)/lib/libts-1.0.so.0.0.0
 	cp $(TSLIB_DIR)/etc/ts.conf  $(TARGET_DIR)/etc
 	cp -dpf $(HOST_DIR)$(EPREFIX)/lib/libts.so $(TARGET_DIR)$(EPREFIX)/lib
 	cp -dpf $(HOST_DIR)$(EPREFIX)/lib/libts-1.0.so.0* $(TARGET_DIR)$(EPREFIX)/lib
@@ -69,9 +68,9 @@ $(TARGET_DIR)$(EPREFIX)/lib/libts-1.0.so.0.0.0:$(TSLIB_DIR)/.installed
 	-$(TARGET_STRIP) --strip-unneeded $(TARGET_DIR)$(EPREFIX)/lib/ts/linear.so
 	touch -c $(TARGET_DIR)$(EPREFIX)/lib/ts/linear.so
 
-tslib:$(TARGET_DIR)$(EPREFIX)/lib/libts-1.0.so.0.0.0
+tslib: $(TARGET_DIR)$(EPREFIX)/lib/libts-1.0.so.0.0.0
 
-tslib-source:$(DL_DIR)/$(TSLIB_SOURCE)
+tslib-source: $(DL_DIR)/$(TSLIB_SOURCE)
 
 tslib-clean:
 	-$(MAKE) -C $(TSLIB_DIR) clean
@@ -82,7 +81,6 @@ tslib-clean:
 	-@rm -f $(TARGET_DIR)/usr/bin/ts*
 	-@rm -f $(HOST_DIR)/include/tslib*.h
 	-@rm -f $(HOST_DIR)$(EPREFIX)/lib/libts*
-	-@rm -f $(TSLIB_DIR)/.built
 
 tslib-dirclean:
 	rm -rf $(TSLIB_DIR)

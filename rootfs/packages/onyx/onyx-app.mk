@@ -38,7 +38,7 @@ $(TARGET_DIR)$(EPREFIX)/lib/libfb_reader.so:$(HOST_DIR)$(EPREFIX)/lib/libfb_read
 	cp -dpf $(ONYX_APP_DIR)/bin/* $(TARGET_DIR)$(EPREFIX)/bin/
 	touch -c $(TARGET_DIR)$(EPREFIX)/lib/libfb_reader.so
 
-onyx-app:onyx-lib $(TARGET_DIR)$(EPREFIX)/lib/libfb_reader.so
+onyx-app:libiconv curl onyx-lib $(TARGET_DIR)$(EPREFIX)/lib/libfb_reader.so
 
 onyx-app-source:$(DL_DIR)/$(ONYX_APP_SOURCE)
 

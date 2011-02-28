@@ -35,11 +35,11 @@ $(LIBICONV_DIR)/.configured: $(LIBICONV_DIR)/.unpacked
 	);
 	touch $(LIBICONV_DIR)/.configured
 
-$(LIBICONV_DIR)/.built: $(LIBICONV_DIR)/.configured
+$(LIBICONV_DIR)/lib/.libs/libiconv.so.2.5.0: $(LIBICONV_DIR)/.configured
 	$(MAKE) CC=$(TARGET_CC) -C $(LIBICONV_DIR)
-	touch $(LIBICONV_DIR)/.built
+	touch -c $(LIBICONV_DIR)/lib/.libs/libiconv.so.2.5.0
 
-$(HOST_DIR)$(EPREFIX)/lib/libiconv.so.2.5.0: $(LIBICONV_DIR)/.built
+$(HOST_DIR)$(EPREFIX)/lib/libiconv.so.2.5.0: $(LIBICONV_DIR)/lib/.libs/libiconv.so.2.5.0
 	$(MAKE) DESTDIR=$(HOST_DIR) -C $(LIBICONV_DIR) install
 
 	mv $(HOST_DIR)$(EPREFIX)/lib/libiconv.la $(HOST_DIR)$(EPREFIX)/lib/libiconv.la.old
@@ -47,7 +47,8 @@ $(HOST_DIR)$(EPREFIX)/lib/libiconv.so.2.5.0: $(LIBICONV_DIR)/.built
 
 	touch -c $(HOST_DIR)$(EPREFIX)/lib/libiconv.so.2.5.0
 
-$(TARGET_DIR)$(EPREFIX)/lib/libiconv.so.2.5.0:$(HOST_DIR)$(EPREFIX)/lib/libiconv.so.2.5.0
+$(TARGET_DIR)$(EPREFIX)/lib/libiconv.so.2.5.0: $(HOST_DIR)$(EPREFIX)/lib/libiconv.so.2.5.0
+	mkdir -p $(TARGET_DIR)$(EPREFIX)/lib
 	cp -dpf $(HOST_DIR)$(EPREFIX)/lib/libiconv.so* $(TARGET_DIR)$(EPREFIX)/lib
 	-$(TARGET_STRIP) $(TARGET_DIR)$(EPREFIX)/lib/libiconv.so.2.5.0
 	cp -dpf $(HOST_DIR)$(EPREFIX)/lib/libcharset.so* $(TARGET_DIR)$(EPREFIX)/lib
@@ -58,10 +59,9 @@ $(TARGET_DIR)$(EPREFIX)/lib/libiconv.so.2.5.0:$(HOST_DIR)$(EPREFIX)/lib/libiconv
 libiconv: $(TARGET_DIR)$(EPREFIX)/lib/libiconv.so.2.5.0
 
 libiconv-clean:
-	$(MAKE) DESTDIR=$(TARGET_DIR) CC=$(TARGET_CC) -C $(LIBICONV_DIR) uninstall
+	$(MAKE) DESTDIR=$(HOST_DIR) CC=$(TARGET_CC) -C $(LIBICONV_DIR) uninstall
 	-$(MAKE) -C $(LIBICONV_DIR) clean
 	-@rm -f $(TARGET_DIR)$(EPREFIX)/lib/libiconv.so*
-	-@rm -f $(LIBICONV_DIR)/.built
 
 libiconv-dirclean:
 	rm -rf $(LIBICONV_DIR)

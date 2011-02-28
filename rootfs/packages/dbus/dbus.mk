@@ -61,7 +61,7 @@ $(TARGET_DIR)$(EPREFIX)/lib/libdbus-1.so.3.4.0: $(HOST_DIR)$(EPREFIX)/lib/libdbu
 	-$(TARGET_STRIP) --strip-unneeded $(TARGET_DIR)$(EPREFIX)/bin/dbus-*
 	touch -c $(TARGET_DIR)$(EPREFIX)/lib/libdbus-1.so.3.4.0
 
-dbus: $(TARGET_DIR)$(EPREFIX)/lib/libdbus-1.so.3.4.0
+dbus: expat $(TARGET_DIR)$(EPREFIX)/lib/libdbus-1.so.3.4.0
 
 dbus-clean:
 	rm -f $(DBUS_DIR)/.configured

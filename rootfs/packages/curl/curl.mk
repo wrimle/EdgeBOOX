@@ -42,19 +42,19 @@ $(CURL_DIR)/.configured: $(CURL_DIR)/.unpacked
 	);
 	touch $(CURL_DIR)/.configured
 
-$(CURL_DIR)/.built: $(CURL_DIR)/.configured
+$(CURL_DIR)/lib/.libs/libcurl.so: $(CURL_DIR)/.configured
 	$(MAKE) CC=$(TARGET_CC) -C $(CURL_DIR)
-	touch $(CURL_DIR)/.built
+	touch -c $(CURL_DIR)/lib/.libs/libcurl.so
 
-$(CURL_DIR)/.installed: $(CURL_DIR)/.built
+$(HOST_DIR)$(EPREFIX)/lib/libcurl.so: $(CURL_DIR)/lib/.libs/libcurl.so
 	$(MAKE) DESTDIR=$(HOST_DIR) -C $(CURL_DIR) install
 
 	mv $(HOST_DIR)$(EPREFIX)/lib/libcurl.la $(HOST_DIR)$(EPREFIX)/lib/libcurl.la.old
 	$(SED) "s,^libdir=.*,libdir=\'$(HOST_DIR)$(EPREFIX)/lib\',g" $(HOST_DIR)$(EPREFIX)/lib/libcurl.la.old > $(HOST_DIR)$(EPREFIX)/lib/libcurl.la
 
-	touch $(CURL_DIR)/.installed
+	touch -c $(HOST_DIR)$(EPREFIX)/lib/libcurl.so
 
-$(TARGET_DIR)$(EPREFIX)/lib/libcurl.so: $(CURL_DIR)/.installed
+$(TARGET_DIR)$(EPREFIX)/lib/libcurl.so: $(HOST_DIR)$(EPREFIX)/lib/libcurl.so
 	cp -dpR $(HOST_DIR)$(EPREFIX)/lib/libcurl.so* $(TARGET_DIR)$(EPREFIX)/lib
 	-$(TARGET_STRIP) $(TARGET_DIR)$(EPREFIX)/lib/libcurl.so*
 	touch -c $(TARGET_DIR)$(EPREFIX)/lib/libcurl.so
@@ -62,10 +62,9 @@ $(TARGET_DIR)$(EPREFIX)/lib/libcurl.so: $(CURL_DIR)/.installed
 curl: zlib $(TARGET_DIR)$(EPREFIX)/lib/libcurl.so
 
 curl-clean:
-	$(MAKE) DESTDIR=$(TARGET_DIR) CC=$(TARGET_CC) -C $(CURL_DIR) uninstall
+	$(MAKE) DESTDIR=$(HOST_DIR) CC=$(TARGET_CC) -C $(CURL_DIR) uninstall
 	-$(MAKE) -C $(CURL_DIR) clean
 	-@rm -f $(TARGET_DIR)$(EPREFIX)/lib/libcurl.so*
-	-@rm -f $(CURL_DIR)/.built
 
 curl-dirclean:
 	rm -rf $(CURL_DIR)

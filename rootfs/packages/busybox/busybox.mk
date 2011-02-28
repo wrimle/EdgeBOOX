@@ -21,6 +21,7 @@ busybox-source: $(DL_DIR)/$(BUSYBOX_SOURCE) $(BUSYBOX_CONFIG_FILE)
 
 $(BUSYBOX_DIR)/.unpacked: $(DL_DIR)/$(BUSYBOX_SOURCE)
 	tar -C $(BUILD_DIR) -xjf $(DL_DIR)/$(BUSYBOX_SOURCE)
+	$(PATCH) $(BUSYBOX_DIR) packages/busybox busybox-1.6.1\*.patch
 	touch $(BUSYBOX_DIR)/.unpacked
 
 $(BUSYBOX_DIR)/.configured: $(BUSYBOX_DIR)/.unpacked $(BUSYBOX_CONFIG_FILE)

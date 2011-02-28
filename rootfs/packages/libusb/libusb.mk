@@ -34,22 +34,23 @@ $(LIBUSB_DIR)/.configured: $(LIBUSB_DIR)/.unpacked
 	);
 	touch $(LIBUSB_DIR)/.configured
 
-$(LIBUSB_DIR)/.built: $(LIBUSB_DIR)/.configured
+$(LIBUSB_DIR)/.libs/libusb.so: $(LIBUSB_DIR)/.configured
 	$(MAKE)	CC=$(TARGET_CC) -C $(LIBUSB_DIR)
-	touch $(LIBUSB_DIR)/.built
+	touch -c $(LIBUSB_DIR)/.libs/libusb.so
 
-$(LIBUSB_DIR)/.installed:$(LIBUSB_DIR)/.built
-	$(MAKE) LD=$(TARGET_LD) DESTDIR=$(HOST_DIR) -C $(LIBUSB_DIR) install
+$(HOST_DIR)$(EPREFIX)/lib/libusb.so: $(LIBUSB_DIR)/.libs/libusb.so
+	$(MAKE) DESTDIR=$(HOST_DIR) -C $(LIBUSB_DIR) install
 
 	mv $(HOST_DIR)$(EPREFIX)/lib/libusb.la $(HOST_DIR)$(EPREFIX)/lib/libusb.la.old
 	$(SED) "s,^libdir=.*,libdir=\'$(HOST_DIR)$(EPREFIX)/lib\',g" $(HOST_DIR)$(EPREFIX)/lib/libusb.la.old > $(HOST_DIR)$(EPREFIX)/lib/libusb.la
 
-	touch $(LIBUSB_DIR)/.installed
+	touch -c $(HOST_DIR)$(EPREFIX)/lib/libusb.so
 
-$(TARGET_DIR)$(EPREFIX)/lib/libusb.so: $(LIBUSB_DIR)/.installed 
+$(TARGET_DIR)$(EPREFIX)/lib/libusb.so: $(HOST_DIR)$(EPREFIX)/lib/libusb.so
 	cp -dpf $(LIBUSB_DIR)/.libs/libusb.so $(TARGET_DIR)$(EPREFIX)/lib
 	cp -dpf $(LIBUSB_DIR)/.libs/libusb-*.so* $(TARGET_DIR)$(EPREFIX)/lib
 	$(TARGET_STRIP) $(TARGET_DIR)$(EPREFIX)/lib/libusb-0.1.so.4.4.4
+	touch -c $(TARGET_DIR)$(EPREFIX)/lib/libusb.so
 
 libusb: $(TARGET_DIR)$(EPREFIX)/lib/libusb.so
 
@@ -58,7 +59,6 @@ libusb-source: $(DL_DIR)/$(LIBUSB_SOURCE)
 libusb-clean:
 	-$(MAKE) -C $(LIBUSB_DIR) clean
 	-@rm -f $(TARGET_DIR)$(EPREFIX)/lib/libusb-*.so*
-	-@rm -f $(LIBUSB_DIR)/.built
 
 libusb-dirclean:
 	rm -rf $(LIBUSB_DIR)

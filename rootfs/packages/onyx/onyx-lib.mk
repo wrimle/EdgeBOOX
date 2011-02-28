@@ -41,7 +41,7 @@ $(TARGET_DIR)$(EPREFIX)/lib/libonyx_ui.so:$(HOST_DIR)$(EPREFIX)/lib/libonyx_ui.s
 	cp -dpf $(ONYX_LIB_DIR)/bin/* $(TARGET_DIR)$(EPREFIX)/bin/
 	touch -c $(TARGET_DIR)$(EPREFIX)/lib/libonyx_ui.so
 
-onyx-lib:qt onyx-cmake $(TARGET_DIR)$(EPREFIX)/lib/libonyx_ui.so
+onyx-lib:zlib qt onyx-cmake $(TARGET_DIR)$(EPREFIX)/lib/libonyx_ui.so
 
 onyx-lib-source:$(DL_DIR)/$(ONYX_LIB_SOURCE)
 

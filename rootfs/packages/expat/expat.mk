@@ -46,6 +46,7 @@ $(HOST_DIR)$(EPREFIX)/lib/libexpat.so.1: $(EXPAT_DIR)/.libs/libexpat.a
 	touch -c $(HOST_DIR)$(EPREFIX)/lib/libexpat.so.1
 
 $(TARGET_DIR)$(EPREFIX)/lib/libexpat.so.1: $(HOST_DIR)$(EPREFIX)/lib/libexpat.so.1
+	mkdir -p $(TARGET_DIR)$(EPREFIX)/lib
 	cp -dpf $(HOST_DIR)$(EPREFIX)/lib/libexpat.so* $(TARGET_DIR)$(EPREFIX)/lib/
 	-$(TARGET_STRIP) --strip-unneeded $(TARGET_DIR)$(EPREFIX)/lib/libexpat.so.1.5.2
 	touch -c $(TARGET_DIR)$(EPREFIX)/lib/libexpat.so.1
