@@ -6,13 +6,11 @@
 #
 #############################################################
 DEFAULT_KERNEL_HEADERS:=$(strip $(subst ",, $(DEFAULT_KERNEL_VERSION)))
-#"
 
 LINUX_HEADERS_DIR:=$(HOST_DIR)/$(DEFAULT_KERNEL_HEADERS)
 
 $(LINUX_HEADERS_DIR)/.unpacked:
 	mkdir -p $(LINUX_HEADERS_DIR)
-#	cp -dpfr $(KERNEL_DIR)/$(LINUX_VERSION)/include $(LINUX_HEADERS_DIR)
 	@if [ "$(KERN_CONFIG)" != "CONFIG_$(ZIMAGE_TARGET_PROC)=y" ] ; then \
 		$(MAKE) $(TARGET_CONFIGURE_OPTS) -C $(LINUX_SOURCE_DIR) mrproper; \
 		$(MAKE) CC=$(TARGET_CC) ARCH=arm -C $(LINUX_SOURCE_DIR) $(PROC_CONFIG); \

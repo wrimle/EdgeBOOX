@@ -1,7 +1,3 @@
-config PACKAGE_LINUX 
-	bool "-- Kernel Options --"
-	default y
-
 choice
 	prompt "Processor Type"
 	default KERNEL_IMX31
@@ -9,29 +5,30 @@ choice
 	help
 		The type of Freescale to build the kernel for.
 
-config KERNEL_IMX31
-        bool "i.MX31"
+	config KERNEL_IMX31
+		bool "i.MX31"
 
 endchoice
+config DEFAULT_PACKAGE_BSP
+	string
+	default "i.MX31"  if KERNEL_IMX31
+	depends PACKAGE_LINUX
 
 config ZIMAGE_CONFIG_FILE
 	string "Custom kernel configuration file to use?"
+	default ""
 	depends PACKAGE_LINUX
-	
-	help
-	  Some people may wish to use their own modified kernel configuration
-	  file, and will specify their config file location with this option.
 
-	  Most people will just use the default configuration file.
+	help
+		Some people may wish to use their own modified kernel configuration
+		file, and will specify their config file location with this option.
+
+		Most people will just use the default configuration file.
 
 config TARGET_ZIMAGE_COPYTO
-	string "also copy the zImage to..."
-	depends on 	PACKAGE_LINUX
+	string "Also copy the zImage to..."
 	default ""
+	depends PACKAGE_LINUX
 	help
-	  Copies the resulting zImage to a secondary location
-	  like a tftp server's root directory.
-
-config DEFAULT_PACKAGE_BSP
-         string
-         default "i.MX31"  if KERNEL_IMX31
+		Copies the resulting zImage to a secondary location
+		like a tftp server's root directory.

@@ -36,6 +36,6 @@ unyaffs-dirclean:
 # Toplevel Makefile options
 #
 #############################################################
-ifeq ($(strip $(TARGET_ROOTFS_YAFFS2_UNYAFFS)),y)
+ifeq ($(strip $(PACKAGE_UNYAFFS)),y)
 TARGETS+=unyaffs
 endif

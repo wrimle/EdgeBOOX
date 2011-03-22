@@ -20,7 +20,7 @@ $(TARGET_DIR)/usr/bin/mkdosfs: $(DOSFS_DIR)/mkdosfs
 	cp $(DOSFS_DIR)/mkdosfs $(TARGET_DIR)/usr/bin
 	$(TARGET_STRIP) $(TARGET_DIR)/usr/bin/mkdosfs
 
-dosfs_tools: kernel-headers $(TARGET_DIR)/usr/bin/mkdosfs
+dosfs_tools: $(TARGET_DIR)/usr/bin/mkdosfs
 
 dosfs_tools-source: $(DL_DIR)/$(DOSFS_SOURCE)
 

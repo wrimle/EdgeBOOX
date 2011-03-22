@@ -54,7 +54,6 @@ include packages/Makefile.in
 
 
 
-#all:   diffclean world
 all:   diffclean world
 
 # In this section, we need .config
@@ -110,6 +109,7 @@ clean: $(TARGETS_CLEAN)
 	find images/ -name ramdisk -print | xargs rm -f 
 	find images/ -name ramdisk.gz -print | xargs rm -f
 	find images/ -name rootfs.jffs2 -print | xargs rm -f
+	find images/ -name rootfs.yaffs2 -print | xargs rm -f
 	find images/ -name rootfs.cramfs -print | xargs rm -f	
 	find images/ -name redboot.bin -print | xargs rm -f
 	find images/ -name vmlinux.gz.img -print | xargs rm -f
@@ -143,93 +143,9 @@ diffclean:
 	@rm -f .config.diff
 
 
-edb9301:
-	cp defconfigs/edb9301_bsp .config
-	make oldconfig
-	make
-
-edb9302: 
-	cp defconfigs/edb9302_bsp .config
-	make oldconfig
-	make
-
-edb9302a: 
-	cp defconfigs/edb9302a_bsp .config
-	make oldconfig
-	make
-
-edb9307:  
-	cp defconfigs/edb9307_bsp .config
-	make oldconfig
-	make
-
-edb9307a: 
-	cp defconfigs/edb9307a_bsp .config
-	make oldconfig
-	make
-
-edb9312: 
-	cp defconfigs/edb9312_bsp .config
-	make oldconfig
-	make
-
-edb9315: 
-	cp defconfigs/edb9315_bsp .config
-	make oldconfig
-	make
-
-edb9315a:
-	cp defconfigs/edb9315a_bsp .config
-	make oldconfig
-	make
-
-full: edb9301 edb9302 edb9302a edb9307 edb9307a edb9312 edb9315 edb9315a
-
 else # ifeq ($(strip $(HAVE_DOT_CONFIG)),y)
 
 all: menuconfig
-
-edb9301: 
-	cp defconfigs/edb9301_bsp .config
-	make oldconfig
-	make
-
-edb9302: 
-	cp defconfigs/edb9302_bsp .config
-	make oldconfig
-	make
-
-edb9302a: 
-	cp defconfigs/edb9302a_bsp .config
-	make oldconfig
-	make
-
-edb9307: 
-	cp defconfigs/edb9307_bsp .config
-	make oldconfig
-	make
-
-edb9307a: 
-	cp defconfigs/edb9307a_bsp .config
-	make oldconfig
-	make
-
-edb9312: 
-	cp defconfigs/edb9312_bsp .config
-	make oldconfig
-	make
-
-edb9315: 
-	cp defconfigs/edb9315_bsp .config
-	make oldconfig
-	make
-
-edb9315a:
-	cp defconfigs/edb9315a_bsp .config
-	make oldconfig
-	make
-
-full: edb9301 edb9302 edb9302a edb9307 edb9307a edb9312 edb9315 edb9315a
 
 # configuration
 # ---------------------------------------------------------------------------
@@ -276,6 +192,7 @@ clean:
 	find images/ -name ramdisk -print | xargs rm -f 
 	find images/ -name ramdisk.gz -print | xargs rm -f
 	find images/ -name rootfs.jffs2 -print | xargs rm -f
+	find images/ -name rootfs.yaffs2 -print | xargs rm -f
 	find images/ -name rootfs.cramfs -print | xargs rm -f
 	find images/ -name redboot.bin -print | xargs rm -f
 	find images/ -name vmlinux.gz.img -print | xargs rm -f

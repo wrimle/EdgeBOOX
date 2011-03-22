@@ -11,14 +11,21 @@ config TARGET_ROOTFS_YAFFS2_COPYTO
 	help
 		Copies the resulting image to a secondary location.
 
-config TARGET_ROOTFS_YAFFS2_BOOX_PACKAGE
-	bool "create a boox update package"
+config TARGET_ROOTFS_YAFFS2_BOOX_UPDATE
+	bool "create a Boox update package"
 	depends on 	TARGET_ROOTFS_YAFFS2
 	default y
 	help
-		Creates a boox 60 update package.
+		Creates a Boox 60 update package.
 
-config TARGET_ROOTFS_YAFFS2_UNYAFFS
+config TARGET_ROOTFS_YAFFS2_BOOX_UPDATE_KERNEL
+	bool "include linux kernel"
+	depends on 	TARGET_ROOTFS_YAFFS2_BOOX_UPDATE
+	default y
+	help
+		Include the Linux kernel in the update package.
+
+config PACKAGE_UNYAFFS
 	bool "build unyaffs tool for host system"
 	depends on 	TARGET_ROOTFS_YAFFS2
 	default n

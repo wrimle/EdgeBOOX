@@ -10,10 +10,6 @@ BUSYBOX_SOURCE:=busybox-1.6.1.tar.bz2
 
 BUSYBOX_CONFIG_FILE=$(subst ",, $(strip $(PACKAGE_BUSYBOX_CONFIG)))
 
-ifeq ($(strip $(PACKAGE_GREP)),y)
-GREP="y"
-endif
-
 $(DL_DIR)/$(BUSYBOX_SOURCE):
 	 $(WGET) -P $(DL_DIR) $(DOWNLOAD_SITE)/$(BUSYBOX_SOURCE)
 
@@ -26,14 +22,6 @@ $(BUSYBOX_DIR)/.unpacked: $(DL_DIR)/$(BUSYBOX_SOURCE)
 
 $(BUSYBOX_DIR)/.configured: $(BUSYBOX_DIR)/.unpacked $(BUSYBOX_CONFIG_FILE)
 	cp $(BUSYBOX_CONFIG_FILE) $(BUSYBOX_DIR)/.config
-	@if [ $(GREP) == "y" ]; then \
-	mv $(BUSYBOX_DIR)/.config $(BUSYBOX_DIR)/old.config; \
-	$(SED) "s,^CONFIG_GREP=y,# CONFIG_GREP is not set\',g" \
-		-e "s,^CONFIG_FEATURE_GREP_EGREP_ALIAS=y,# CONFIG_FEATURE_GREP_EGREP_ALIAS is not set\',g" \
-		-e "s,^CONFIG_FEATURE_GREP_FGREP_ALIAS=y,# CONFIG_FEATURE_GREP_FGREP_ALIAS is not set\',g" \
-		-e "s,^CONFIG_FEATURE_GREP_CONTEXT=y,# CONFIG_FEATURE_GREP_CONTEXT is not set\',g" \
-		$(BUSYBOX_DIR)/old.config > $(BUSYBOX_DIR)/.config ; \
-	fi;
 	$(MAKE) CC=$(TARGET_CC) CROSS_COMPILE="$(TARGET_CROSS)" -C $(BUSYBOX_DIR) oldconfig
 	touch $(BUSYBOX_DIR)/.configured
 

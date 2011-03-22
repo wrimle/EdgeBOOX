@@ -1,15 +1,14 @@
 DFLT_KERNEL_VERSION:=$(strip $(subst ",, $(DEFAULT_KERNEL_VERSION)))
-#"
 
 ZIMAGE_CUSTOM_CONFIG=$(subst ",, $(strip $(ZIMAGE_CONFIG_FILE)))
-#"
+
 ifneq ("$(strip $(ZIMAGE_CUSTOM_CONFIG))",)
 PROC_CONFIG:=
 PROC_CONFIG:=$(ZIMAGE_CUSTOM_CONFIG)
 endif
 
 ifeq ("$(strip $(DFLT_KERNEL_VERSION))","2.6.26")
-LINUX_SOURCE:=linux-2.6.26.tgz
+LINUX_SOURCE:=linux-2.6.26.tar.bz2
 LINUX_VERSION:=linux-2.6.26
 endif
 
@@ -32,12 +31,11 @@ $(DL_DIR)/$(LINUX_SOURCE):
 
 $(LINUX_SOURCE_DIR)/.unpacked: $(DL_DIR)/$(LINUX_SOURCE)
 	mkdir -p $(BASE_DIR)/kernel
-	tar -C $(KERNEL_DIR) -xzf $(DL_DIR)/$(LINUX_SOURCE)
-	-mv $(KERNEL_DIR)/trunk $(LINUX_SOURCE_DIR)
+	tar -C $(KERNEL_DIR) -xjf $(DL_DIR)/$(LINUX_SOURCE)
 	touch $(LINUX_SOURCE_DIR)/.unpacked
 
 $(LINUX_SOURCE_DIR)/.patched: $(LINUX_SOURCE_DIR)/.unpacked
-	$(PATCH) $(LINUX_SOURCE_DIR) packages/kernel/linux $(LINUX_VERSION)\*.patch
+	$(PATCH) $(LINUX_SOURCE_DIR) packages/kernel/linux $(LINUX_VERSION)\*.patch\*
 	touch $(LINUX_SOURCE_DIR)/.patched
 
 $(LINUX_SOURCE_DIR)/menu_config:$(LINUX_SOURCE_DIR)/.patched
@@ -78,9 +76,7 @@ linux-source: $(LINUX_SOURCE_DIR)/.patched
 
 linux-clean:
 	-$(MAKE) CC=$(TARGET_CC) -C $(LINUX_SOURCE_DIR) mrproper
-	-@rm -f $(LINUX_SOURCE_DIR)/.ep_name_*
 	
-
 linux-dirclean:
 	rm -rf $(LINUX_SOURCE_DIR)
 
@@ -90,5 +86,5 @@ linux-dirclean:
 #
 #############################################################
 ifeq ($(strip $(PACKAGE_LINUX)),y)
-#TARGETS+=linux
+TARGETS+=linux
 endif

@@ -71,7 +71,7 @@ $(TARGET_DIR)$(EPREFIX)/lib/libQtCore.so.4.5.2:$(HOST_DIR)$(EPREFIX)/lib/libQtCo
 	cp -dpf $(HOST_DIR)$(EPREFIX)/lib/fonts/*.ttf $(TARGET_DIR)$(EPREFIX)/lib/fonts
 	touch -c $(TARGET_DIR)$(EPREFIX)/lib/libQtCore.so.4.5.2
 
-qt:dbus tslib $(TARGET_DIR)$(EPREFIX)/lib/libQtCore.so.4.5.2
+qt:dbus tslib openssl $(TARGET_DIR)$(EPREFIX)/lib/libQtCore.so.4.5.2
 
 qt-source:$(DL_DIR)/$(QT_SOURCE)
 

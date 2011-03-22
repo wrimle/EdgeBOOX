@@ -1,13 +1,19 @@
+config PACKAGE_LINUX
+	bool "Linux Kernel"
+	default y
+
 choice
-        prompt "Kernel Version"
-        default KERNEL_VERSION_2_6_26
-        help
-          Select the version of the Linux Kernel you wish to use.
+	prompt "Kernel Version"
+	default KERNEL_VERSION_2_6_26
+	depends PACKAGE_LINUX
+	help
+		Select the version of the Linux Kernel you wish to use.
 		
 	config KERNEL_VERSION_2_6_26
 		bool "linux-2.6.26"
 
 endchoice
 config DEFAULT_KERNEL_VERSION
-        string
+	string
 	default "2.6.26"	if KERNEL_VERSION_2_6_26
+	depends PACKAGE_LINUX

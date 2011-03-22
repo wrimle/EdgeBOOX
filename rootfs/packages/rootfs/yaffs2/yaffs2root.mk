@@ -59,7 +59,7 @@ ifneq ($(YAFFS2_COPYTO),)
 	@cp -f $(YAFFS2_TARGET) $(YAFFS2_COPYTO)
 endif
 
-BOOX_PACKAGE_TARGET :=$(YAFFS2_IMAGE_LOCATION)/$(IMAGE_LOCATION)/update
+BOOX_UPDATE_TARGET :=$(YAFFS2_IMAGE_LOCATION)/$(IMAGE_LOCATION)/update
 PACKAGE_DIR := $(YAFFS2_IMAGE_LOCATION)/packaging
 
 $(PACKAGE_DIR)/.unpacked: packages/rootfs/yaffs2/packaging.tar.gz
@@ -67,12 +67,18 @@ $(PACKAGE_DIR)/.unpacked: packages/rootfs/yaffs2/packaging.tar.gz
 	tar -C $(PACKAGE_DIR) -xzf packages/rootfs/yaffs2/packaging.tar.gz
 	touch $(PACKAGE_DIR)/.unpacked
 
-$(BOOX_PACKAGE_TARGET): yaffs2root aescrypt $(PACKAGE_DIR)/.unpacked
+$(BOOX_UPDATE_TARGET): linux yaffs2root aescrypt $(PACKAGE_DIR)/.unpacked
 	echo "$(BOOX_VERSION) $(shell date +"%Y%m%d")" > $(PACKAGE_DIR)/onyx_update/version
-	@cp -f $(YAFFS2_TARGET) $(PACKAGE_DIR)/opt/freescale/ltib
+	@if [ "$(TARGET_ROOTFS_YAFFS2_BOOX_UPDATE_KERNEL)" == "y" ] ; then \
+		cp -dpf $(ZIMAGE_TARGET)/zImage $(PACKAGE_DIR)/onyx_update/images; \
+		cp -dpf packages/rootfs/yaffs2/zImage-initramfs $(PACKAGE_DIR)/onyx_update/images; \
+	else \
+		rm -f $(PACKAGE_DIR)/onyx_update/images/zImage*; \
+	fi;
+	@cp -dpf $(YAFFS2_TARGET) $(PACKAGE_DIR)/opt/freescale/ltib
 	(cd $(PACKAGE_DIR);tar --owner=root --group=root -czf $(PACKAGE_DIR)/onyx_update/images/rootfs.tar.gz opt/)
-	(cd $(PACKAGE_DIR);tar --owner=root --group=root -czf $(BOOX_PACKAGE_TARGET) onyx_update/)
-	-@$(HOST_DIR)/usr/bin/aescrypt -e -p a8wZ49?b -o $(BOOX_PACKAGE_TARGET).upd $(BOOX_PACKAGE_TARGET)
+	(cd $(PACKAGE_DIR);tar --owner=root --group=root -czf $(BOOX_UPDATE_TARGET) onyx_update/)
+	-@$(HOST_DIR)/usr/bin/aescrypt -e -p a8wZ49?b -o $(BOOX_UPDATE_TARGET).upd $(BOOX_UPDATE_TARGET)
 
 yaffs2root-source: mkyaffs2image-source
 
@@ -82,7 +88,7 @@ yaffs2root-clean: mkyaffs2image-clean
 yaffs2root-dirclean: yaffs2-dirclean
 	-rm -f $(YAFFS2_TARGET)
 
-yaffs2booxpackage: $(BOOX_PACKAGE_TARGET)
+yaffs2booxupdate: $(BOOX_UPDATE_TARGET)
 
 #############################################################
 #
@@ -93,6 +99,6 @@ ifeq ($(strip $(TARGET_ROOTFS_YAFFS2)),y)
 TARGETS+=yaffs2root
 endif
 
-ifeq ($(strip $(TARGET_ROOTFS_YAFFS2_BOOX_PACKAGE)),y)
-TARGETS+=yaffs2booxpackage
+ifeq ($(strip $(TARGET_ROOTFS_YAFFS2_BOOX_UPDATE)),y)
+TARGETS+=yaffs2booxupdate
 endif
